@@ -1,0 +1,326 @@
+    services:
+        nginx:
+          depends_on:
+              - nextjs
+          build:
+            context: ./requirements/nginx
+            dockerfile: Dockerfile
+          ports:
+            - "443:443/tcp"
+          image: nginx:1.27.1
+          container_name: nginx
+          env_file: ./env/.env_nginx
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.2
+          hostname: nginx
+          volumes:
+              - "static_service_app:/static/api"
+              - "static_service_chat:/static/chat"
+
+        nextjs:
+          depends_on:
+              - service_app_django
+              - service_chat_django
+          build:
+            context: ./requirements/nextjs
+            dockerfile: Dockerfile
+          image: nextjs
+          container_name: nextjs
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.3
+          hostname: nextjs
+          volumes:
+              - "nextjs:/transcendence"
+
+        service_app_django:
+          depends_on:
+              - service_app_postgresql
+              - debezium
+              - redpanda-0
+              - redpanda-1
+              - redpanda-2
+          build:
+            context: ./requirements/service_app/django
+            dockerfile: Dockerfile
+          image: python:3.13.0rc1
+          container_name: service_app_django
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_service_app
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.4
+          hostname: service_app_django
+          volumes:
+              - "service_app_django:/django_web_app"
+              - "static_service_app:/static"
+
+        service_app_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: service_app_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.5
+          hostname: service_app_postgresql
+          env_file:
+            - ./env/.env_service_app
+          volumes:
+            - "./requirements/service_app/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+            - "./requirements/service_app/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
+            - "./requirements/service_app/postgresql/tools/data:/docker-entrypoint-initdb.d"
+          command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf",]
+
+        service_chat_django:
+          depends_on:
+              - service_chat_postgresql
+              - debezium
+              - redpanda-0
+              - redpanda-1
+              - redpanda-2
+          build:
+            context: ./requirements/service_chat/django
+            dockerfile: Dockerfile
+          image: python:3.13.0rc1_1
+          container_name: service_chat_django
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_service_chat
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.6
+          hostname: service_chat_django
+          volumes:
+              - "service_chat_django:/django_web_chat"
+              - "static_service_chat:/static"
+
+        service_chat_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: service_chat_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.7
+          hostname: service_chat_postgresql
+          env_file:
+            - ./env/.env_service_chat
+          volumes:
+            - "./requirements/service_chat/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+            - "./requirements/service_chat/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
+            - "./requirements/service_chat/postgresql/tools/data:/docker-entrypoint-initdb.d"
+          command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf",]
+
+#        redpanda-0:
+#          command:
+#            - redpanda
+#            - start
+#            - --kafka-addr internal://0.0.0.0:9092
+#            - --advertise-kafka-addr internal://redpanda-0:9092
+#            - --pandaproxy-addr internal://0.0.0.0:8082
+#            - --advertise-pandaproxy-addr internal://redpanda-0:8082
+#            - --schema-registry-addr internal://0.0.0.0:8081
+#            - --rpc-addr redpanda-0:33145
+#            - --advertise-rpc-addr redpanda-0:33145
+#            - --mode dev-container
+#            - --smp 1
+#            - --default-log-level=info
+#          image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+##          build:
+##            context: ./requirements/eventbus
+##            dockerfile: Dockerfile
+##          image: red_panda_data:24.2.7
+#          container_name: redpanda-0
+##          init: true
+#          restart: always
+#          networks:
+#            network:
+#              ipv4_address: 172.18.0.8
+##          hostname: red_panda_data
+#          volumes:
+#              - "redpanda-0:/var/lib/redpanda/data"
+
+
+
+        redpanda-0:
+          image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+          #image: redpandadata/redpanda@sha256:eca8188c285f65ee2edea3c76af7cec497dd60f58e93b67e1ab1be595b3debb5
+          container_name: redpanda-0
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.252
+          hostname: redpanda-0
+#          volumes:
+#            - redpanda-0:/var/lib/redpanda/data
+          command:
+            - redpanda start
+            - --mode dev-container
+            - --smp 1
+            - --kafka-addr internal://0.0.0.0:9092
+            - --advertise-kafka-addr internal://redpanda-0:9092
+            - --pandaproxy-addr internal://0.0.0.0:8082
+            - --advertise-pandaproxy-addr internal://redpanda-0:8082
+            - --schema-registry-addr internal://0.0.0.0:8081
+            - --rpc-addr redpanda-0:33145
+            - --advertise-rpc-addr redpanda-0:33145
+      
+        redpanda-1:
+          image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+          #image: redpandadata/redpanda@sha256:eca8188c285f65ee2edea3c76af7cec497dd60f58e93b67e1ab1be595b3debb5
+          container_name: redpanda-1
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.253
+          hostname: redpanda-1
+#          volumes:
+#            - redpanda-1:/var/lib/redpanda/data
+          command:
+            - redpanda start
+            - --mode dev-container
+            - --smp 1
+            - --kafka-addr internal://0.0.0.0:9092
+            - --advertise-kafka-addr internal://redpanda-1:9092
+            - --pandaproxy-addr internal://0.0.0.0:8082
+            - --advertise-pandaproxy-addr internal://redpanda-1:8082
+            - --schema-registry-addr internal://0.0.0.0:8081
+            - --rpc-addr redpanda-1:33145
+            - --advertise-rpc-addr redpanda-1:33145
+            - --seeds redpanda-0:33145
+      
+        redpanda-2:
+          image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+          #image: redpandadata/redpanda@sha256:eca8188c285f65ee2edea3c76af7cec497dd60f58e93b67e1ab1be595b3debb5
+          container_name: redpanda-2
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.18.0.254
+          hostname: redpanda-2
+#          volumes:
+#            - redpanda-2:/var/lib/redpanda/data
+          command:
+            - redpanda start
+            - --mode dev-container
+            - --smp 1
+            - --kafka-addr internal://0.0.0.0:9092
+            - --advertise-kafka-addr internal://redpanda-2:9092
+            - --pandaproxy-addr internal://0.0.0.0:8082
+            - --advertise-pandaproxy-addr internal://redpanda-2:8082
+            - --schema-registry-addr internal://0.0.0.0:8081
+            - --rpc-addr redpanda-2:33145
+            - --advertise-rpc-addr redpanda-2:33145
+            - --seeds redpanda-0:33145
+
+        debezium:
+          depends_on:
+            - service_app_postgresql
+            - service_chat_postgresql
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
+          image: debezium/connect@sha256:dace85f0627159fa62172d48f1defdfd25d057c42fc7d2ebfe14051fd295d93a
+          container_name: debezium
+          networks:
+            network:
+              ipv4_address: 172.18.0.251
+          hostname: debezium
+          env_file:
+            - ./env/.env_debezium
+          volumes:
+            - "./requirements/debezium/tools/connectors:/connectors"
+
+                #        smart_contract:
+                #          depends_on:
+                #              - postgresql
+                #          build:
+                #            context: ./requirements/smart_contract
+                #            dockerfile: Dockerfile
+                #          image: solidity:10.11.6
+                #          container_name: smart_contract
+                #          env_file: .env
+                #          init: true
+                #          restart: always
+                #          hostname: smart_contract
+                #          volumes:
+                #              - "smart_contract:/projects"
+
+                #    volumes:
+                #      smart_contract:
+                #        driver: local
+                #        driver_opts:
+                #          type: 'none'
+                #          o: 'bind'
+                #          device: "../volume/smart_contract"
+
+    networks:
+      network:
+        driver: bridge
+        ipam:
+          config:
+            - subnet: 172.18.0.0/24
+
+    volumes:
+      nextjs:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/nextjs"
+      static_service_app:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/static/static_service_app"
+      service_app_django:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/service_app/django"
+      service_app_postgresql:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/service_app/postgresql"
+      static_service_chat:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/static/static_service_chat"
+      service_chat_django:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/service_chat/django"
+      service_chat_postgresql:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/service_chat/postgresql"
+      redpanda-0:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "../volume/eventbus"
