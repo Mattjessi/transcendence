@@ -36,7 +36,8 @@
               ipv4_address: 172.18.0.3
           hostname: nextjs
           volumes:
-              - "nextjs:/transcendence"
+              - "nextjs_public:/transcendence/public"
+              - "nextjs_app:/transcendence/src/app"
 
         service_app_django:
           depends_on:
@@ -236,6 +237,8 @@
             - redpanda-2
           image: debezium/connect@sha256:dace85f0627159fa62172d48f1defdfd25d057c42fc7d2ebfe14051fd295d93a
           container_name: debezium
+          init: true
+          restart: always
           networks:
             network:
               ipv4_address: 172.18.0.251
@@ -276,12 +279,18 @@
             - subnet: 172.18.0.0/24
 
     volumes:
-      nextjs:
+      nextjs_public:
         driver: local
         driver_opts:
           type: 'none'
           o: 'bind'
-          device: "../volume/nextjs"
+          device: "./requirements/nextjs/tools/public"
+      nextjs_app:
+        driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: "./requirements/nextjs/tools/app"
       static_service_app:
         driver: local
         driver_opts:

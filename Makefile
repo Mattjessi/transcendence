@@ -6,9 +6,9 @@ all:
 		sudo mkdir -p "./volume/smart_contract"; \
 	fi
 
-	@if [ ! -d "./volume/nextjs" ]; then \
-		sudo mkdir -p "./volume/nextjs"; \
-	fi
+#	@if [ ! -d "./volume/nextjs" ]; then \
+#		sudo mkdir -p "./volume/nextjs"; \
+#	fi
 
 	@if [ ! -d "./volume/static/static_service_app" ]; then \
 		sudo mkdir -p "./volume/static/static_service_app"; \

@@ -13,11 +13,14 @@ RUN npx create-next-app@15.0.3 transcendence --typescript --eslint --tailwind \
 
 WORKDIR /transcendence
 
-RUN yarn add axios bootstrap
+RUN yarn add axios
 RUN yarn install
-#RUN yarn build
 
+COPY ./tools/public/ ./public
+COPY ./tools/app/ ./src/app/
+#COPY ./tools/nextjs/ ./
 #COPY ./tools/page.tsx ./src/app/page.tsx
+#RUN yarn build
 
 EXPOSE 3000
 
