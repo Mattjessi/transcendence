@@ -8,7 +8,7 @@ RUN apk update \
 	&& apk upgrade \
 	&& apk add vim
 
-RUN npx create-next-app@15.0.3 transcendence --typescript --eslint --tailwind \
+RUN npx create-next-app@15.0.3 transcendence --typescript --eslint --no-tailwind \
 		--src-dir --app --no-import-alias --no-turbopack --use-yarn
 
 WORKDIR /transcendence
@@ -18,12 +18,17 @@ RUN yarn install
 
 COPY ./tools/public/ ./public
 COPY ./tools/app/ ./src/app/
+COPY ./tools/.eslintrc.json ./.eslintrc.json
+#COPY ./tools/middleware.ts ./
 #COPY ./tools/nextjs/ ./
 #COPY ./tools/page.tsx ./src/app/page.tsx
-#RUN yarn build
+
+# Comment in dev mod
+RUN yarn build
 
 EXPOSE 3000
 
-#CMD ["yarn", "start"]
-CMD ["yarn", "dev"]
-#CMD ["sleep", "infinity"]
+# Comment in dev mod
+CMD ["yarn", "start"]
+
+#CMD ["yarn", "dev"]

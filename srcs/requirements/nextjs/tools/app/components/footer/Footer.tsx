@@ -1,8 +1,7 @@
 import React from "react";
-import Image from "next/image";
-import svgHeart from '/public/images/heart.svg';
 
 export default function HomeBloc() {
+
     return (
         <>
             <div
@@ -13,11 +12,13 @@ export default function HomeBloc() {
             >
                 <p>
                     Developed with
-                        <Image
+                        <img
                             className="d-inline-block align-text-top"
-                            src={svgHeart}
+                            src="/images/heart.svg"
                             alt="love"
-                            priority={false}
+							width="331"
+							height="272"
+							role="img"
                         />
                     by mcordes
                 </p>

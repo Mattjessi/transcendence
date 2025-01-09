@@ -198,17 +198,17 @@ input:checked ~ ul {
     backdrop-filter:blur(10px);
 }
 
-input:checked ~ ul > a {
+input:checked ~ ul > li {
     flex: 1 1 20%;
     margin: 5px;
 }
 
-nav > ul > a {
+nav > ul > li > a {
     display: block;
-}
-
-nav > ul > a > li {
     background-color: var(--background-color-blue);
+	background-size: 70px;
+	background-position: center;
+	background-repeat: repeat;
     padding: 10px 10px 10px 10px;
     border-style: solid;
     border-width: 5px 5px 5px 5px;
@@ -217,11 +217,23 @@ nav > ul > a > li {
     transition: box-shadow 0.2s ease;
 }
 
-input:checked ~ ul > a > li:hover {
+nav > ul > li:nth-child(1) > a {
+	background-image: url('/images/background_home.svg');
+}
+
+nav > ul > li:nth-child(2) > a {
+	background-image: url('/images/background_connexion.svg');
+}
+
+nav > ul > li:nth-child(3) > a {
+	background-image: url('/images/background_games.svg');
+}
+
+input:checked ~ ul > li > a:hover {
     box-shadow: inset 0px 0px 0px 2px white;
 }
 
-input:checked ~ ul > a > li:active {
+input:checked ~ ul > li > a:active {
     box-shadow: inset 0px 0px 0px 4px white;
 }
 
@@ -240,8 +252,26 @@ main {
     background-repeat: no-repeat;
     background-position: bottom;
 }
+
 .homeElements {
-    flex: 1 1 35vh;
+	flex: 1 1 35vh;
+}
+
+.homeElements:not(:first-child) {
+	background-size: '70px';
+	background-position: 'center';
+	background-repeat: 'repeat';
+	font-size: '1.25rem';
+}
+
+.homeElements:nth-child(2){
+	background-color: rgb(20, 135, 30, 1);
+	background-image: url('/images/background_connexion.svg');
+}
+
+.homeElements:nth-child(3){
+	background-color: rgb(166, 34, 186, 1);
+	background-image: url('/images/background_games.svg');
 }
 
 footer {
@@ -356,22 +386,22 @@ footer > div:nth-child(2) > p > img {
         padding: 0px;
     }
 
-    nav > ul > a {
+    nav > ul > li {
         margin: 0px 15px 2px 0px;
     }
 
-    nav > ul > a > li {
+    nav > ul > li > a {
         padding: 8px 10px 4px 5px;
         border-width: 5px 5px 5px 0px;
         width: calc(95% - 15px);
         transition: width 0.1s ease;
     }
 
-    nav > ul > a > li:hover {
+    nav > ul > li > a:hover {
         width: calc(95% - 5px);
     }
 
-    nav > ul > a > li:active {
+    nav > ul > li > a:active {
         width: 95%;
     }
 

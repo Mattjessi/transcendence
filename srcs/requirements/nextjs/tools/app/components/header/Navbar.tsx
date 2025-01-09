@@ -2,9 +2,6 @@
 
 import React from 'react';
 import { useEffect } from 'react';	
-import Link from "next/link";
-import Image from "next/image";
-import svgLogo from '/public/images/logo.svg';
 import NavbarItem from "./NavbarItem";
 
 export default function Navbar() {
@@ -55,16 +52,17 @@ export default function Navbar() {
             <div
                 className="boxBorderYellow backRedStroke responsiveMenu"
             >
-                <Link
+                <a
                     href="/"
-                    prefetch
                 >
-                    <Image
-                        src={svgLogo}
+                    <img
+                        src="/images/logo.svg"
                         alt="logo Super Pong"
-                        priority={false}
+						width="622"
+						height="334"
+						role="img"
                     />
-                </Link>
+                </a>
             </div>
             <input
                 type="checkbox"

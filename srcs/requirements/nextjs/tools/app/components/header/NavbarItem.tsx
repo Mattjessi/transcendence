@@ -1,6 +1,4 @@
 import React from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { items } from '../../assets/data/navbarItems';
 
 export default function NavbarItem() {
@@ -8,31 +6,24 @@ export default function NavbarItem() {
     return (
         <>
             {items.map(item => (
-                <Link
-                    href={item.href}
-                    key={item.id}
-                    prefetch
-                >
-                    <li
-                    style={{
-                        backgroundImage: `url(${item.backImg})`,
-                        backgroundSize: '70px',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'repeat',
-                    }}
-                    >
+				<li
+					key={item.id}
+				>
+					<a
+						href={item.href}
+					>
                         <div>
-                            <Image
+                            <img
                                 src={item.img}
                                 alt={item.alt}
-                                width={30}
-                                height={30}
-                                priority={false}
+                                width="30px"
+                                height="30px"
+								role="img"
                             />
                         </div>
                         {item.title}
-                    </li>
-                </Link>
+					</a>
+				</li>
             ))}
         </>
     )

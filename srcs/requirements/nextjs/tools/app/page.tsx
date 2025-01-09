@@ -1,9 +1,8 @@
 import React from 'react';
-import Link from "next/link";
-import Image from "next/image";
 import { items } from './assets/data/homePageItems';
 
 export default function Home() {
+
     return (
         <>
             <div
@@ -18,31 +17,22 @@ export default function Home() {
                 </h1>
             </div>
             {items.map(item => (
-                <Link
+                <a
                     className= "boxBorderYellow mainBoxBorderWidth justifyContentFlexbox homeElements box"
                     href={item.href}
                     key={item.id}
-                    style={{
-                        backgroundColor: item.backColor,
-                        backgroundImage: `url(${item.backImg})`,
-                        backgroundSize: '70px',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'repeat',
-                        fontSize: '1.25rem',
-                    }}
-                    prefetch
                 >
                     <div>
-                        <Image
+                        <img
                             src={item.img}
                             alt={item.alt}
-                            width={60}
-                            height={60}
-                            priority={false}
+                            width="60px"
+                            height="60px"
+							role="img"
                         />
                     </div>
                     {item.title}
-                </Link>
+                </a>
             ))}
         </>
     );
