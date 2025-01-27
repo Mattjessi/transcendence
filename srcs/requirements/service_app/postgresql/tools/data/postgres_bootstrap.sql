@@ -29,3 +29,7 @@ create table pong_article (
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
+
+/*
+SELECT setval(pg_get_serial_sequence('dbz_public_pong_article', 'id'), (SELECT MAX(id) FROM dbz_public_pong_article) + 1);
+*/

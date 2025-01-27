@@ -1,7 +1,7 @@
     services:
         nginx:
           depends_on:
-              - nextjs
+              - frontend
           build:
             context: ./requirements/nginx
             dockerfile: Dockerfile
@@ -14,30 +14,50 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.2
+              ipv4_address: 172.20.0.2
           hostname: nginx
           volumes:
               - "static_service_app:/static/api"
               - "static_service_chat:/static/chat"
+              - "static_frontend:/static/frontend"
 
-        nextjs:
+        frontend:
           depends_on:
               - service_app_django
               - service_chat_django
+              - frontend_postgresql
           build:
-            context: ./requirements/nextjs
+            context: ./requirements/frontend/django
             dockerfile: Dockerfile
-          image: nextjs
-          container_name: nextjs
+          image: frontend
+          container_name: frontend
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_frontend
           init: true
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.3
-          hostname: nextjs
+              ipv4_address: 172.20.0.3
+          hostname: frontend
           volumes:
-              - "nextjs_public:/transcendence/public"
-              - "nextjs_app:/transcendence/src/app"
+              - "static_frontend:/static"
+
+        frontend_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: frontend_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.8
+          hostname: frontend_postgresql
+          env_file:
+            - ./env/.env_frontend
+          volumes:
+            - "./requirements/frontend/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+            - "./requirements/frontend/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
+          command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf",]
 
         service_app_django:
           depends_on:
@@ -58,7 +78,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.4
+              ipv4_address: 172.20.0.4
           hostname: service_app_django
           volumes:
               - "service_app_django:/django_web_app"
@@ -71,7 +91,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.5
+              ipv4_address: 172.20.0.5
           hostname: service_app_postgresql
           env_file:
             - ./env/.env_service_app
@@ -100,7 +120,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.6
+              ipv4_address: 172.20.0.6
           hostname: service_chat_django
           volumes:
               - "service_chat_django:/django_web_chat"
@@ -113,7 +133,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.7
+              ipv4_address: 172.20.0.7
           hostname: service_chat_postgresql
           env_file:
             - ./env/.env_service_chat
@@ -147,7 +167,7 @@
 #          restart: always
 #          networks:
 #            network:
-#              ipv4_address: 172.18.0.8
+#              ipv4_address: 172.20.0.8
 ##          hostname: red_panda_data
 #          volumes:
 #              - "redpanda-0:/var/lib/redpanda/data"
@@ -162,7 +182,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.252
+              ipv4_address: 172.20.0.252
           hostname: redpanda-0
 #          volumes:
 #            - redpanda-0:/var/lib/redpanda/data
@@ -186,7 +206,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.253
+              ipv4_address: 172.20.0.253
           hostname: redpanda-1
 #          volumes:
 #            - redpanda-1:/var/lib/redpanda/data
@@ -211,7 +231,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.254
+              ipv4_address: 172.20.0.254
           hostname: redpanda-2
 #          volumes:
 #            - redpanda-2:/var/lib/redpanda/data
@@ -241,7 +261,7 @@
           restart: always
           networks:
             network:
-              ipv4_address: 172.18.0.251
+              ipv4_address: 172.20.0.251
           hostname: debezium
           env_file:
             - ./env/.env_debezium
@@ -276,21 +296,15 @@
         driver: bridge
         ipam:
           config:
-            - subnet: 172.18.0.0/24
+            - subnet: 172.20.0.0/24
 
     volumes:
-      nextjs_public:
+      static_frontend:
         driver: local
         driver_opts:
           type: 'none'
           o: 'bind'
-          device: "./requirements/nextjs/tools/public"
-      nextjs_app:
-        driver: local
-        driver_opts:
-          type: 'none'
-          o: 'bind'
-          device: "./requirements/nextjs/tools/app"
+          device: "../volume/static/static_frontend"
       static_service_app:
         driver: local
         driver_opts:

@@ -33,6 +33,7 @@ COPY ./conf/settings.py ./$PROJECT_DIR/settings.py
 COPY ./tools/models.py ./pong/models.py
 COPY ./tools/serializers.py ./pong/serializers.py
 COPY ./tools/views.py ./pong/views.py
+COPY ./tools/admin.py ./pong/admin.py
 
 COPY ./tools/urls.py ./game/urls.py
 

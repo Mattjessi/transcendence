@@ -15,6 +15,7 @@ insert into orders(customer_id, total) values (3,10);
 insert into orders(customer_id, total) values (4,90);
 */
 
+/*
 -- Create the pong_article table
 create table pong_article (
     id SERIAL PRIMARY KEY,
@@ -26,3 +27,7 @@ create table pong_article (
 insert into pong_article(id, titre, contenu) values (1, 'Mon premier tome', 'un');
 insert into pong_article(id, titre, contenu) values (2, 'Mon deuxieme tome', 'deux');
 insert into pong_article(id, titre, contenu) values (3, 'Mon troisieme tome', 'trois');
+
+
+SELECT setval(pg_get_serial_sequence('pong_article', 'id'), (SELECT MAX(id) FROM pong_article) + 1);
+*/
