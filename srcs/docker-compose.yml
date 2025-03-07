@@ -19,21 +19,13 @@
           volumes:
               - "static_service_app:/static/api"
               - "static_service_chat:/static/chat"
-              - "static_frontend:/static/frontend"
 
         frontend:
           depends_on:
               - service_app_django
               - service_chat_django
-              - frontend_postgresql
-          build:
-            context: ./requirements/frontend/django
-            dockerfile: Dockerfile
-          image: frontend
+          image: node:23.9.0-alpine3.20a@sha256:d328a006af9cd556fec56d3fb325ce8fdee988b511dfdfe90d3182bed900aecd
           container_name: frontend
-          env_file:
-            - ./env/.env_nginx
-            - ./env/.env_frontend
           init: true
           restart: always
           networks:
@@ -41,23 +33,19 @@
               ipv4_address: 172.20.0.3
           hostname: frontend
           volumes:
-              - "static_frontend:/static"
-
-        frontend_postgresql:
-          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
-          container_name: frontend_postgresql
-          init: true
-          restart: always
-          networks:
-            network:
-              ipv4_address: 172.20.0.8
-          hostname: frontend_postgresql
-          env_file:
-            - ./env/.env_frontend
-          volumes:
-            - "./requirements/frontend/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
-            - "./requirements/frontend/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
-          command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf",]
+            - "./requirements/frontend/conf/index.html:/home/frontend/index.html"
+            - "./requirements/frontend/conf/package-lock.json:/home/frontend/package-lock.json"
+            - "./requirements/frontend/conf/package.json:/home/frontend/package.json"
+            - "./requirements/frontend/conf/public:/home/frontend/public"
+            - "./requirements/frontend/conf/src:/home/frontend/src"
+            - "./requirements/frontend/conf/vite.config.js:/home/frontend/vite.config.js"
+          command: >
+            sh -c "apk update \
+            && apk upgrade \
+            && apk add vim \
+            && npm install --prefix /home/frontend \
+            && npm run build --prefix /home/frontend \
+            && npx serve /home/frontend/dist"
 
         service_app_django:
           depends_on:
@@ -66,6 +54,7 @@
               - redpanda-0
               - redpanda-1
               - redpanda-2
+              - vault
           build:
             context: ./requirements/service_app/django
             dockerfile: Dockerfile
@@ -73,7 +62,8 @@
           container_name: service_app_django
           env_file:
             - ./env/.env_nginx
-            - ./env/.env_service_app
+            - ./env/.env_service_app_django
+            - ./env/.env_service_app_postgres
           init: true
           restart: always
           networks:
@@ -81,8 +71,9 @@
               ipv4_address: 172.20.0.4
           hostname: service_app_django
           volumes:
-              - "service_app_django:/django_web_app"
-              - "static_service_app:/static"
+            - "service_app_django:/django_web_app"
+            - "static_service_app:/static"
+            - "./requirements/service_app/django/conf/vault_utils.py:/django_web_app/game/utils/vault_utils.py"
 
         service_app_postgresql:
           image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
@@ -94,7 +85,7 @@
               ipv4_address: 172.20.0.5
           hostname: service_app_postgresql
           env_file:
-            - ./env/.env_service_app
+            - ./env/.env_service_app_postgres
           volumes:
             - "./requirements/service_app/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
             - "./requirements/service_app/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
@@ -115,7 +106,8 @@
           container_name: service_chat_django
           env_file:
             - ./env/.env_nginx
-            - ./env/.env_service_chat
+            - ./env/.env_service_chat_django
+            - ./env/.env_service_chat_postgres
           init: true
           restart: always
           networks:
@@ -136,12 +128,80 @@
               ipv4_address: 172.20.0.7
           hostname: service_chat_postgresql
           env_file:
-            - ./env/.env_service_chat
+            - ./env/.env_service_chat_postgres
           volumes:
             - "./requirements/service_chat/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
             - "./requirements/service_chat/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
             - "./requirements/service_chat/postgresql/tools/data:/docker-entrypoint-initdb.d"
           command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf",]
+
+        vault:
+          depends_on:
+              - vault_postgresql
+              - vault_sealer
+          image: hashicorp/vault@sha256:c51bb287709b74daefab32d1246cac767c32b8c73cb86509957634dffcd66a0e
+          container_name: vault
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.9
+          env_file: ./env/.env_vault
+          hostname: vault
+          volumes:
+            - "./requirements/hashicorp_vault/vault/conf/config:/vault/config/:rw"
+            - "./requirements/hashicorp_vault/vault/conf/file:/vault/file/:rw"
+            - "./requirements/hashicorp_vault/vault/conf/logs:/vault/logs/:rw"
+            - "./requirements/hashicorp_vault/vault/conf/server.crt:/vault/certs/server.crt"
+            - "./requirements/hashicorp_vault/vault/conf/server.key:/vault/certs/server.key"
+            - "./requirements/hashicorp_vault/vault/conf/root.crt:/vault/certs/root.crt"
+          cap_add:
+            - IPC_LOCK
+          command: >
+            sh -c "mkdir -p /vault/certs \
+            && apk update \
+            && apk add openssl vim postgresql-client \
+            && openssl req -x509 -nodes -out /vault/certs/vault-cert.pem -keyout /vault/certs/vault-key.pem -subj '/C=FR/ST=Alpes-Maritimes/L=Nice/O=Ecole\ 42/OU=Ecole/CN=transcendence.fr/emailAddress=mcordes@student.42nice.fr' \
+            && vault server -config=/vault/config/vault.hcl"
+
+        vault_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: vault_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.10
+          hostname: vault_postgresql
+          env_file:
+            - ./env/.env_vault_postgres
+          volumes:
+            - "./requirements/hashicorp_vault/postgresql/conf/server.crt:/etc/postgresql/server.crt"
+            - "./requirements/hashicorp_vault/postgresql/conf/server.key:/etc/postgresql/server.key"
+            - "./requirements/hashicorp_vault/postgresql/conf/root.crt:/etc/postgresql/root.crt"
+            - "./requirements/hashicorp_vault/postgresql/conf/data:/var/lib/postgresql/data"
+
+        vault_sealer:
+          image: hashicorp/vault@sha256:c51bb287709b74daefab32d1246cac767c32b8c73cb86509957634dffcd66a0e
+          container_name: vault_sealer
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.11
+          env_file: ./env/.env_vault_sealer
+          hostname: vault_sealer
+          volumes:
+            - "./requirements/hashicorp_vault_sealer/vault/conf/config:/vault/config/:rw"
+            - "./requirements/hashicorp_vault_sealer/vault/conf/file:/vault/file/:rw"
+          #  - "./requirements/hashicorp_vault/vault/conf/logs:/vault/logs/:rw"
+          #  - "./requirements/hashicorp_vault/vault/conf/server.crt:/vault/certs/server.crt"
+          #  - "./requirements/hashicorp_vault/vault/conf/server.key:/vault/certs/server.key"
+          #  - "./requirements/hashicorp_vault/vault/conf/root.crt:/vault/certs/root.crt"
+          cap_add:
+            - IPC_LOCK
+          command: >
+            sh -c "vault server -config=/vault/config/vault.hcl"
 
 #        redpanda-0:
 #          command:
@@ -299,12 +359,6 @@
             - subnet: 172.20.0.0/24
 
     volumes:
-      static_frontend:
-        driver: local
-        driver_opts:
-          type: 'none'
-          o: 'bind'
-          device: "../volume/static/static_frontend"
       static_service_app:
         driver: local
         driver_opts:

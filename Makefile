@@ -6,10 +6,6 @@ all:
 		sudo mkdir -p "./volume/smart_contract"; \
 	fi
 
-	@if [ ! -d "./volume/static/static_frontend" ]; then \
-		sudo mkdir -p "./volume/static/static_frontend"; \
-	fi
-
 	@if [ ! -d "./volume/static/static_service_app" ]; then \
 		sudo mkdir -p "./volume/static/static_service_app"; \
 	fi
@@ -51,6 +47,10 @@ all:
 	@while ! docker compose -f ./srcs/docker-compose.yml exec debezium /bin/bash /connectors/sink.sh -eq 0; do \
 		sleep 1; \
 	done
+
+	@sudo docker compose -f ./srcs/docker-compose.yml exec vault_sealer vault operator unseal XSlqgv8XRbzSyytnbzck3V2nQHWdB/1/o4IIzJhdvVzQ
+	@sudo docker compose -f ./srcs/docker-compose.yml exec vault_sealer vault operator unseal x9Pcd9kSLALh4i7PgEW/6Kke2Swd8Ambyo/z12OgQIrA
+	@sudo docker compose -f ./srcs/docker-compose.yml exec vault_sealer vault operator unseal +CveHjrkub3mRvRItUMni2zhx5Z3zuuUk+ccUypr+kDX
 
 clean:
 

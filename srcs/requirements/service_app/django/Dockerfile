@@ -10,23 +10,24 @@ ARG ENV_DIR=$APP_DIR/env/bin/activate
 
 #Installing utils
 RUN apk update \
-    && apk upgrade \
-    && apk add vim postgresql-dev postgresql-client gcc python3-dev musl-dev
+	&& apk upgrade \
+	&& apk add vim postgresql-dev postgresql-client gcc python3-dev musl-dev
 
 RUN mkdir $APP_DIR /static
 WORKDIR $APP_DIR
 
 RUN	python3 -m venv env \
 	&& source $ENV_DIR \
-    && pip install --upgrade pip \
-    && pip install django psycopg gunicorn djangorestframework kafka-python \
+	&& pip install --upgrade pip \
+	&& pip install django psycopg gunicorn djangorestframework kafka-python hvac \
 	&& pip freeze > requirements.txt \
-    && django-admin startproject $PROJECT_DIR
+	&& django-admin startproject $PROJECT_DIR
 
 WORKDIR	$APP_DIR/$PROJECT_DIR
 
 RUN source $ENV_DIR \
-    && python3 manage.py startapp pong
+	&& python3 manage.py startapp pong \
+	&& mkdir utils
 
 COPY ./conf/settings.py ./$PROJECT_DIR/settings.py
 

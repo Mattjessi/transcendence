@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+from utils.vault_utils import get_vault_secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,18 +77,22 @@ WSGI_APPLICATION = 'game.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv('POSTGRES_DB'),
-        "USER": os.getenv('POSTGRES_USER'),
-        "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
-        "HOST": os.getenv('POSTGRES_HOST'),
-        "PORT": os.getenv('POSTGRES_PORT'),
-        "CONN_MAX_AGE":None,
-        "CONN_HEALTH_CHECKS":True,
+vault_secrets = get_vault_secrets()
+if vault_secrets:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv('POSTGRES_DB'),
+            "USER": os.getenv('POSTGRES_USER'),
+            "PASSWORD": vault_secrets['db_password'],
+            "HOST": os.getenv('POSTGRES_HOST'),
+            "PORT": os.getenv('POSTGRES_PORT'),
+            "CONN_MAX_AGE":None,
+            "CONN_HEALTH_CHECKS":True,
+        }
     }
-}
+else:
+    raise Exception("Impossible de charger les secrets depuis Vault. Vérifie la configuration.")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -19,7 +19,7 @@ WORKDIR $APP_DIR
 RUN	python3 -m venv env \
 	&& source $ENV_DIR \
     && pip install --upgrade pip \
-    && pip install django psycopg gunicorn djangorestframework kafka-python \
+    && pip install django psycopg gunicorn djangorestframework kafka-python hvac \
 	&& pip freeze > requirements.txt \
     && django-admin startproject $PROJECT_DIR
 
