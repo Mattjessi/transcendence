@@ -1,7 +1,7 @@
     services:
         nginx:
           depends_on:
-              - frontend
+            - frontend
           build:
             context: ./requirements/nginx
             dockerfile: Dockerfile
@@ -17,13 +17,14 @@
               ipv4_address: 172.20.0.2
           hostname: nginx
           volumes:
-              - "static_service_app:/static/api"
-              - "static_service_chat:/static/chat"
+            - "static_service_app:/static/api"
+            - "static_service_chat:/static/chat"
+            - "./requirements/service_user_handler/django/conf/static:/static/users"
 
         frontend:
           depends_on:
-              - service_app_django
-              - service_chat_django
+            - service_app_django
+            - service_chat_django
           image: node:23.9.0-alpine3.20a@sha256:d328a006af9cd556fec56d3fb325ce8fdee988b511dfdfe90d3182bed900aecd
           container_name: frontend
           init: true
@@ -47,14 +48,57 @@
             && npm run build --prefix /home/frontend \
             && npx serve /home/frontend/dist"
 
+        service_user_handler_django:
+          depends_on:
+            - service_user_handler_postgresql
+            - debezium
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
+            - vault
+          build:
+            context: ./requirements/service_user_handler/django
+            dockerfile: Dockerfile
+          image: python:3.13.0rc1_2
+          container_name: service_user_handler_django
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_service_user_handler_django
+            - ./env/.env_service_user_handler_postgres
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.40
+          hostname: service_user_handler_django
+          volumes:
+            - "./requirements/service_user_handler/django/conf/pong:/django_web_app/transcendence/pong"
+            - "./requirements/service_user_handler/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_user_handler/django/conf/static:/django_web_app/transcendence/staticfiles"
+              #- "./requirements/service_user_handler/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
+
+        service_user_handler_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: service_user_handler_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.41
+          hostname: service_user_handler_postgresql
+          env_file:
+            - ./env/.env_service_user_handler_postgres
+          volumes:
+            - "./requirements/service_user_handler/postgresql/conf/data:/var/lib/postgresql/data"
+
         service_app_django:
           depends_on:
-              - service_app_postgresql
-              - debezium
-              - redpanda-0
-              - redpanda-1
-              - redpanda-2
-              - vault
+            - service_app_postgresql
+            - debezium
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
+            - vault
           build:
             context: ./requirements/service_app/django
             dockerfile: Dockerfile
@@ -94,11 +138,11 @@
 
         service_chat_django:
           depends_on:
-              - service_chat_postgresql
-              - debezium
-              - redpanda-0
-              - redpanda-1
-              - redpanda-2
+            - service_chat_postgresql
+            - debezium
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
           build:
             context: ./requirements/service_chat/django
             dockerfile: Dockerfile
@@ -115,8 +159,8 @@
               ipv4_address: 172.20.0.6
           hostname: service_chat_django
           volumes:
-              - "service_chat_django:/django_web_chat"
-              - "static_service_chat:/static"
+            - "service_chat_django:/django_web_chat"
+            - "static_service_chat:/static"
 
         service_chat_postgresql:
           image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
@@ -137,8 +181,8 @@
 
         vault:
           depends_on:
-              - vault_postgresql
-              - vault_sealer
+            - vault_postgresql
+            - vault_sealer
           image: hashicorp/vault@sha256:c51bb287709b74daefab32d1246cac767c32b8c73cb86509957634dffcd66a0e
           container_name: vault
           init: true
