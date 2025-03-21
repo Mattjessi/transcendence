@@ -23,9 +23,9 @@ function Register() {
 			<div className="position-fixed">
 				<Gameplay canva={canva} className="background-canvas"/>
 			</div>
+			<h1 className="position-absolute top-0 left-0 m-1 p-1 text-bg-dark fw-bolder fs-1">Pong.</h1>
 			<div className="position-absolute top-0 d-flex justify-content-center align-items-center vh-100 w-100">
 				<div className="text-bg-dark px-3 px-lg-5 pt-2 pt-lg-4 pb-3 pb-lg-4">
-					<h1 className="display-4 display-lg-1 fw-bolder text-center mb-4">Pong.</h1>
 					<UserPass/>
 				</div>
 			</div>

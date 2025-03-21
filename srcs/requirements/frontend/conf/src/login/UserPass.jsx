@@ -164,7 +164,7 @@ function UserPass() {
 			<div class="d-flex justify-content-center pt-3 mb-3 mb-lg-5">
 				<Button
 					type="submit"
-					className="btn btn-secondary rounded-0"
+					className="btn btn-secondary rounded-0 fw-bolder"
 				>
 					LOGIN
 				</Button>
@@ -172,7 +172,7 @@ function UserPass() {
 			<div class="d-flex justify-content-end pt-3">
 				<Button
 					type="button"
-					className="btn btn-secondary rounded-0"
+					className="btn btn-secondary rounded-0 fw-bolder"
 					onClick={() => navigate("/register")}
 				>
 					REGISTER
