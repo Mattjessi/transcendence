@@ -7,7 +7,7 @@ all:
 						./srcs/requirements/hashicorp_vault/postgresql/conf/server.crt \
 						./srcs/requirements/hashicorp_vault/postgresql/conf/server.key
 
-	@sudo make ./srcs/requirements/service_user_handler/postgresql/conf/data/pg_serial \
+	@sudo mkdir ./srcs/requirements/service_user_handler/postgresql/conf/data/pg_serial \
 				./srcs/requirements/service_user_handler/postgresql/conf/data/pg_stat_tmp \
 				./srcs/requirements/service_user_handler/postgresql/conf/data/pg_snapshots \
 				./srcs/requirements/service_user_handler/postgresql/conf/data/pg_twophase \
