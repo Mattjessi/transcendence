@@ -49,16 +49,17 @@ class BlockSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
     token = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'password2', 'token']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['username', 'password1', 'password2', 'token']
+        extra_kwargs = {'password1': {'write_only': True}}
 
     def validate(self, data):
-        if data['password'] != data['password2']:
+        if data['password1'] != data['password2']:
             raise serializers.ValidationError({"password": "Les mots de passe ne correspondent pas."})
         if User.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError({"username": "Ce nom d'utilisateur est déjà pris."})
@@ -68,7 +69,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = User.objects.create_user(
             username=validated_data['username'],
-            password=validated_data['password']
+            password=validated_data['password1']
         )
         Player.objects.create(user=user, name=validated_data['username'])
         return user

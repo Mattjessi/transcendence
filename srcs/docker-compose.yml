@@ -20,12 +20,16 @@
             - "static_service_app:/static/api"
             - "static_service_chat:/static/chat"
             - "./requirements/service_user_handler/django/conf/static:/static/users"
+            - "./requirements/service_game_pong/django/conf/static:/static/pong"
+            - "./requirements/service_live_chat/django/conf/static:/static/live_chat"
 
         frontend:
           depends_on:
             - service_app_django
             - service_chat_django
             - service_user_handler_django
+            - service_game_pong_django
+            - service_live_chat_django
           image: node:23.9.0-alpine3.20a@sha256:d328a006af9cd556fec56d3fb325ce8fdee988b511dfdfe90d3182bed900aecd
           container_name: frontend
           init: true
@@ -92,6 +96,92 @@
           volumes:
             - "./requirements/service_user_handler/postgresql/conf/data:/var/lib/postgresql/data"
 
+        service_game_pong_django:
+          depends_on:
+            - service_game_pong_postgresql
+            - debezium
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
+            - vault
+          build:
+            context: ./requirements/service_game_pong/django
+            dockerfile: Dockerfile
+          image: python:3.13.0rc1_game_pong
+          container_name: service_game_pong_django
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_service_game_pong_django
+            - ./env/.env_service_game_pong_postgres
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.42
+          hostname: service_game_pong_django
+          volumes:
+            - "./requirements/service_game_pong/django/conf/pong:/django_web_app/transcendence/pong"
+            - "./requirements/service_game_pong/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_game_pong/django/conf/static:/django_web_app/transcendence/staticfiles"
+              #- "./requirements/service_game_pong/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
+
+        service_game_pong_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: service_game_pong_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.43
+          hostname: service_game_pong_postgresql
+          env_file:
+            - ./env/.env_service_game_pong_postgres
+          volumes:
+            - "./requirements/service_game_pong/postgresql/conf/data:/var/lib/postgresql/data"
+
+        service_live_chat_django:
+          depends_on:
+            - service_live_chat_postgresql
+            - debezium
+            - redpanda-0
+            - redpanda-1
+            - redpanda-2
+            - vault
+          build:
+            context: ./requirements/service_live_chat/django
+            dockerfile: Dockerfile
+          image: python:3.13.0rc1_live_chat
+          container_name: service_live_chat_django
+          env_file:
+            - ./env/.env_nginx
+            - ./env/.env_service_live_chat_django
+            - ./env/.env_service_live_chat_postgres
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.44
+          hostname: service_live_chat_django
+          volumes:
+            - "./requirements/service_live_chat/django/conf/pong:/django_web_app/transcendence/pong"
+            - "./requirements/service_live_chat/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_live_chat/django/conf/static:/django_web_app/transcendence/staticfiles"
+              #- "./requirements/service_live_chat/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
+
+        service_live_chat_postgresql:
+          image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
+          container_name: service_live_chat_postgresql
+          init: true
+          restart: always
+          networks:
+            network:
+              ipv4_address: 172.20.0.45
+          hostname: service_live_chat_postgresql
+          env_file:
+            - ./env/.env_service_live_chat_postgres
+          volumes:
+            - "./requirements/service_live_chat/postgresql/conf/data:/var/lib/postgresql/data"
+
         service_app_django:
           depends_on:
             - service_app_postgresql
@@ -144,6 +234,7 @@
             - redpanda-0
             - redpanda-1
             - redpanda-2
+            - vault
           build:
             context: ./requirements/service_chat/django
             dockerfile: Dockerfile

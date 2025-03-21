@@ -85,7 +85,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'frontend', 'templates'), 
+            os.path.join(BASE_DIR, 'frontend', 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -206,5 +206,5 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/users/admin/'
 LOGIN_URL = '/login'
