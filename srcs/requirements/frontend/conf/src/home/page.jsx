@@ -22,17 +22,23 @@ function Home() {
 	}
 
 	return (
-		<div>
-			<div className="position-fixed top-0">
-				<Gameplay canva={canva} className="background-canvas"/>
-			</div>
-			<h1 className="position-absolute top-0 left-0 m-1 p-1 text-bg-dark fw-bolder fs-1">Pong.</h1>
-			<div class="d-flex position-absolute top-0 vh-100 w-100 justify-content-end align-items-start">
-				<Button type="submit" onClick={() => disconnect()}
-					className="m-1 p-1 rounded-0 btn btn-dark fw-bolder">DISCONNECT</Button>
-			</div>
-			<GameMenu/>
-		</div>
+		<>
+			<header>
+				<nav className="navbar bg-dark opacity-75 fixed-top p-2">
+					<div className="container-fluid p-0 m-0">
+						<h1 className="navbar-brand text-bg-dark fw-bolder fs-1 m-0 p-0">Pong.</h1>
+						<Button type="submit" onClick={() => disconnect()}
+							className="rounded-0 btn btn-dark fw-bolder">DISCONNECT</Button>
+					</div>
+				</nav>
+			</header>
+			<main>
+				<div className="position-fixed top-0">
+					<Gameplay canva={canva} className="background-canvas"/>
+				</div>
+				<GameMenu/>
+			</main>
+		</>
 	)
 }
 

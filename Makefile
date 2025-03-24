@@ -100,7 +100,7 @@ all:
 		sudo mkdir -p "./volume/eventbus"; \
 	fi
 
-	@sudo COMPOSE_BAKE=true docker compose -f ./srcs/docker-compose.yml up -d --build
+	@sudo docker compose -f ./srcs/docker-compose.yml up -d --build
 
 	@printf "\033[00;32mDebezium source connectors create\033[00m\n"
 

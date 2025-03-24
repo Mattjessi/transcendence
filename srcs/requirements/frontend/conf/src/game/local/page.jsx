@@ -28,19 +28,34 @@ function Local() {
 		navigate("/home")
 	}
 
+	const disconnect = () => {
+		localStorage.removeItem("jwt")
+		navigate("/")
+	}
+
 	return (
-		<div className="local-page">
-			<Gameplay canva={ canva } className="backgroud-canvas"
-			elem={ n } color={ color }/>
-			{resize ?	<div>
-							<h1 className="title" onClick={ goHome }>Pong.</h1>
-							<Settings/>
-							<Skin elem={ n } color={ color } setN={ setN } setColor={ setColor }/>
-							<Button onClick={goPlay} className="local-submit">PLAY</Button>
-						</div>
-					 : <></>}
-			<ResizeModal resize={ resize }/>
-		</div>
+		<>
+			<header>
+				<nav className="navbar bg-dark opacity-75 fixed-top p-2">
+					<div className="container-fluid p-0 m-0">
+						<h1 onClick={ goHome } className="navbar-brand text-bg-dark fw-bolder fs-1 m-0 p-0">Pong.</h1>
+						<Button type="submit" onClick={() => disconnect()}
+							className="rounded-0 btn btn-dark fw-bolder">DISCONNECT</Button>
+					</div>
+				</nav>
+			</header>
+			<main>
+				<div className="position-fixed top-0">
+					<Gameplay canva={ canva } className="backgroud-canvas"
+					elem={ n } color={ color }/>
+				</div>
+				<div>
+					<Settings/>
+					<Skin elem={ n } color={ color } setN={ setN } setColor={ setColor }/>
+					<Button onClick={goPlay} className="local-submit">PLAY</Button>
+				</div>
+			</main>
+		</>
 	)
 }
 
