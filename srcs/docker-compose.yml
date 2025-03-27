@@ -77,8 +77,8 @@
               ipv4_address: 172.20.0.40
           hostname: service_user_handler_django
           volumes:
-            - "./requirements/service_user_handler/django/conf/pong:/django_web_app/transcendence/pong"
-            - "./requirements/service_user_handler/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_user_handler/django/conf/core:/django_web_app/core"
+            - "./requirements/service_user_handler/django/conf/django_user_handler:/django_web_app/django_user_handler"
             - "./requirements/service_user_handler/django/conf/static:/django_web_app/transcendence/staticfiles"
               #- "./requirements/service_user_handler/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
