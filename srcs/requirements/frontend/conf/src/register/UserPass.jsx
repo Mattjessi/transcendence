@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap"
 import axios from 'axios';
 import './style.css';
 
@@ -24,7 +24,7 @@ function UserPass() {
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
-    const [password1, setPassword1] = useState('');
+    const [password, setPassword] = useState('');
     const [password2, setPassword2] = useState('');
     const [errorMessage, setErrorMessage] = useState(''); // Pour afficher les erreurs
 
@@ -35,6 +35,24 @@ function UserPass() {
     const [passShow2, setPassShow2] = useState(false);
     const showPass2 = () => setPassShow2(true);
     const hidePass2 = () => setPassShow2(false);
+
+	const [show, setShow] = useState(false)
+	const handleClose = () => setShow(false)
+	const handleShow = () => setShow(true)
+
+	const error = [ "",
+				"Passwords are not similar.",
+				"Username is already taken.",
+				"Password is not strong enough.\nPassword must contain at least 8 characters.",
+				"Password is not strong enough.\nPassword must contain at least one number.",
+				"Password is not strong enough.\nPassword must contain at least one lowercase letter.",
+				"Password is not strong enough.\nPassword must contain at least one capital letter.",
+				"Password is not strong enough.\nPassword must contain at least one special character (!@#$%^&*...).",
+				"Username required.",
+				"Password required.",
+				"Second password required."]
+
+	const [errorId, setErrorId] = useState(0)
 
     // Configure Axios pour inclure les cookies (nécessaire pour CSRF)
     useEffect(() => {
@@ -50,7 +68,7 @@ function UserPass() {
                 'https://transcendence.fr/users/api/register/',
                 {
                     username: username,
-                    password1: password1,
+                    password: password,
                     password2: password2
                 },
                 {
@@ -59,34 +77,44 @@ function UserPass() {
                     }
                 }
             );
-            if (response.status === 201) {
-                console.log('Inscription réussie :', response.data);
-                navigate("/");
-            }
+			if (response.request.response == "{\"code\":1000}") {
+				navigate("/")
+			}
         } catch (error) {
-            console.log('Erreur complète :', error);
-            if (error.response) {
-                const errorData = error.response.data;
-                if (errorData.username) {
-                    setErrorMessage("Ce nom d'utilisateur est déjà pris.");
-                } else if (errorData.password1) {
-                    setErrorMessage("Les mots de passe ne correspondent pas.");
-                } else if (errorData.detail) {
-                    setErrorMessage(errorData.detail); // Affiche l’erreur CSRF si elle persiste
-                } else {
-                    setErrorMessage("Une erreur s'est produite. Veuillez réessayer.");
-                }
-            } else {
-                setErrorMessage("Erreur de connexion au serveur.");
-            }
-            setUsername("");
-            setPassword1("");
-            setPassword2("");
-        }
+			//console.log(error)
+			setUsername("")
+			setPassword("")
+			setPassword2("")
+			if (error.response.request.response == "{\"code\":1001}")
+				setErrorId(1);
+			else if (error.response.request.response == "{\"code\":1002}")
+				setErrorId(2);
+			else if (error.response.request.response == "{\"code\":1003}")
+				setErrorId(3);
+			else if (error.response.request.response == "{\"code\":1004}")
+				setErrorId(4);
+			else if (error.response.request.response == "{\"code\":1005}")
+				setErrorId(5);
+			else if (error.response.request.response == "{\"code\":1006}")
+				setErrorId(6);
+			else if (error.response.request.response == "{\"code\":1007}")
+				setErrorId(7);
+			else if (error.response.request.response == "{\"code\":1009}")
+				setErrorId(8);
+			else if (error.response.request.response == "{\"code\":1010}")
+				setErrorId(9);
+			else if (error.response.request.response == "{\"code\":1011}")
+				setErrorId(10);
+			else if (errorData.detail)
+				setErrorMessage(errorData.detail) // Affiche l’erreur CSRF si elle persiste
+			else
+				setErrorId(0);
+			handleShow()
+		}
     };
 
     return (
-        <Form onSubmit={sendAuth}>
+        <Form>
             {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
             <Form.Group className="fs-5 fs-lg-4 mb-2 mb-lg-4">
                 <Form.Label className="mb-0" for="username">Username</Form.Label>
@@ -106,9 +134,9 @@ function UserPass() {
                 <div className="d-flex">
                     <Form.Control
                         type={passShow1 ? "text" : "password"}
-                        value={password1}
+                        value={password}
                         placeholder="Insert password"
-                        onChange={(e) => setPassword1(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         className="rounded-0"
 						name="password"
 						id="password"
@@ -147,6 +175,7 @@ function UserPass() {
 				<Button
 					type="submit"
 					className="btn btn-secondary rounded-0 fw-bolder"
+					onClick={sendAuth}
 				>
 					REGISTER
 				</Button>
@@ -160,6 +189,12 @@ function UserPass() {
 					LOGIN
 				</Button>
 			</div>
+			<Modal show={show} onHide={handleClose} className="login-modal">
+				<Modal.Header closeButton>
+					<Modal.Title>Registration error</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>{error[errorId]}</Modal.Body>
+			</Modal>
         </Form>
     );
 }

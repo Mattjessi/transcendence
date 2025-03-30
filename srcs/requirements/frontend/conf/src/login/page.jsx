@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import Gameplay from "../gameplay/menu/page.jsx"
 import UserPass from "./UserPass.jsx"
 import ResizeScreen from "../global/resize-screen.jsx"
@@ -8,7 +9,17 @@ function Login() {
 
 	const canva = useRef(null)
 
+	const navigate = useNavigate()
+
 	const { resize } = ResizeScreen()
+
+	useEffect(() => {
+
+		const token = localStorage.getItem('jwt')
+
+		if (token)
+		  navigate('/home')
+	  }, [navigate])
 
 	useEffect(() => {
 

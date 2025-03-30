@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import axios from 'axios';
 import './style.css';
 
@@ -31,6 +31,17 @@ function UserPass() {
     const [passShow, setPassShow] = useState(false);
     const showPass = () => setPassShow(true);
     const hidePass = () => setPassShow(false);
+
+	const [show, setShow] = useState(false)
+	const handleClose = () => setShow(false)
+	const handleShow = () => setShow(true)
+
+	const error = [ "",
+			"Username required.",
+			"Password required.",
+			"Username or Password incorrect."]
+
+	const [errorId, setErrorId] = useState(0)
 
     // Récupère le jeton CSRF au chargement
     useEffect(() => {
@@ -91,38 +102,34 @@ function UserPass() {
                     withCredentials: true
                 }
             );
-            console.log("Connexion réussie :", response.data);
-            if (response.status === 200) {
-                if (response.data.tokens) {
-                    localStorage.setItem('jwt', JSON.stringify(response.data.tokens));
-                    if (localStorage.getItem('jwt')) {
-                        navigate('/home');
-                    }
-                } else {
-                    setErrorMessage('Réponse inattendue du serveur (tokens manquants).');
-                }
-            }
+			console.log(response)
+			if (response.request.response.includes("\"code\":1000")) {
+				if (response.data.tokens) {
+					localStorage.setItem('jwt', response.data.tokens)
+					if (localStorage.getItem("jwt"))
+						navigate("/home")
+				}
+			}
         } catch (error) {
-            console.log("Erreur complète :", error);
-            if (error.response) {
-                const errorData = error.response.data;
-                if (errorData.error) {
-                    setErrorMessage(errorData.error);
-                } else if (errorData.detail && errorData.detail.includes("CSRF")) {
-                    setErrorMessage("Erreur CSRF : jeton manquant ou invalide.");
-                } else {
-                    setErrorMessage("Erreur lors de la connexion.");
-                }
-            } else {
-                setErrorMessage("Erreur de connexion au serveur.");
-            }
-            setUsername("");
-            setPassword("");
+			//console.log(error)
+			setUsername("")
+			setPassword("")
+			if (error.response.request.response == "{\"code\":1009}")
+				setErrorId(1)
+			else if (error.response.request.response == "{\"code\":1010}")
+				setErrorId(2)
+			else if (error.response.request.response == "{\"code\":1013}")
+				setErrorId(3)
+			else if (errorData.detail && errorData.detail.includes("CSRF"))
+				setErrorMessage("Erreur CSRF : jeton manquant ou invalide.")
+			else
+				setErrorId(0)
+				handleShow()
         }
     };
 
     return (
-        <Form onSubmit={sendAuth}>
+        <Form>
             {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
             <Form.Group className="fs-5 fs-lg-4 mb-2 mb-lg-4">
                 <Form.Label className="mb-0" for="username">Username</Form.Label>
@@ -165,6 +172,7 @@ function UserPass() {
 				<Button
 					type="submit"
 					className="btn btn-secondary rounded-0 fw-bolder"
+					onClick={sendAuth}
 				>
 					LOGIN
 				</Button>
@@ -178,6 +186,12 @@ function UserPass() {
 					REGISTER
 				</Button>
 			</div>
+			<Modal show={show} onHide={handleClose} className="">
+				<Modal.Header closeButton>
+					<Modal.Title>Connection error</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>{error[errorId]}</Modal.Body>
+			</Modal>
         </Form>
     );
 }
