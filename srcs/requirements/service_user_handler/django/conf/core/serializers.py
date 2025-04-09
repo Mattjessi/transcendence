@@ -8,33 +8,49 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.hashers import check_password
 from core.validators import validate_strong_password
 from django.contrib.auth import authenticate
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 class PlayerSerializer(serializers.ModelSerializer):
-    def get_fields(self):
-        fields = super().get_fields()
-        request = self.context.get('request')
-        user = request.user if request and request.user.is_authenticated else None
-        player = self.instance
+    class Meta:
+        model = Player
+        fields = ['id', 'created_at', 'name', 'victory', 'defeat', 'avatar', 'online', 'last_seen', 'description']
 
-        if not user or not player:
+    def to_representation(self, instance):
+        fields = super().to_representation(instance)
+        request = self.context.get('request')
+        user = request.user if request and hasattr(request, 'user') else None
+
+
+        if not user or not user.is_authenticated:
+            del fields['online']
+            del fields['last_seen']
+            del fields['description']
             return fields
 
-        is_friend = Friendship.objects.filter(
-            models.Q(from_player=user.player_profile, to_player=player) |
-            models.Q(from_player=player, to_player=user.player_profile),
-            status='accepted'
-        ).exists()
+        try:
+            current_player = user.player_profile
+        except AttributeError:
+            del fields['online']
+            del fields['last_seen']
+            del fields['description']
+            return fields
 
-        if not is_friend and user.player_profile != player:
+        # Vérifier si c’est le joueur lui-même ou un ami
+        is_self = current_player.id == instance.id
+        friendship = Friendship.objects.filter(
+            models.Q(player_1=current_player, player_2=instance, status='accepted') |
+            models.Q(player_1=instance, player_2=current_player, status='accepted')
+        ).first()
+        is_friend = is_self or (friendship is not None)
+
+        if not is_friend:
             del fields['online']
             del fields['last_seen']
             del fields['description']
 
         return fields
-
-    class Meta:
-        model = Player
-        fields = ['id', 'name', 'online', 'last_seen', 'description']
 
 class GameSerializer(serializers.ModelSerializer):
     player_1 = PlayerSerializer(read_only=True)
@@ -83,7 +99,7 @@ class PlayerRegisterSerializer(serializers.Serializer):
     def validate(self, data):
         if not data.get('username'):
             raise serializers.ValidationError({"code": 1009}) # Nom d'utilisateur requis.
-        if not data.get('password'):
+        if not data.get('password') or not data.get('password2'):
             raise serializers.ValidationError({"code": 1010}) # Mot de passe requis.
         if data['password'] != data['password2']:
             raise serializers.ValidationError({"code": 1001})  # Les mots de passe ne correspondent pas.
@@ -107,12 +123,13 @@ class PlayerRegisterSerializer(serializers.Serializer):
             return {"code": 1000}
 
 class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
-    description = serializers.CharField(write_only=True)
-    online      = serializers.BooleanField(write_only=True)
+    description = serializers.CharField(write_only=True, required=False, allow_blank=True, allow_null=True)
+    online = serializers.BooleanField(write_only=True, required=False, allow_null=True)
+    avatar = serializers.ImageField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Player
-        fields = ['online', 'description']
+        fields = ['online', 'description', 'avatar']
 
     def validate(self, data):
         request = self.context.get('request')
@@ -123,18 +140,39 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
         if instance != request.user.player_profile:
             raise serializers.ValidationError({"code": 1031})
 
+        avatar = data.get('avatar')
+        if avatar:
+            allowed_extensions = ['jpg', 'jpeg', 'png']
+            if not avatar.name.lower().endswith(tuple(allowed_extensions)):
+                raise serializers.ValidationError({"code": 1032})
+
+            max_weight = 2 * 1024 * 1024  # 2 Mo en octets
+            if avatar.size > max_weight:
+                raise serializers.ValidationError({"code": 1033})
+
+            try:
+                img = Image.open(avatar)
+                max_dimensions = (500, 500)
+                if img.width > max_dimensions[0] or img.height > max_dimensions[1]:
+                    raise serializers.ValidationError({"code": 1034})
+            except Exception:
+                raise serializers.ValidationError({"code": 1035})
+
         return data
 
     def update(self, instance, validated_data):
         description = validated_data.get('description')
         online = validated_data.get('online')
+        avatar = validated_data.get('avatar')
+        if avatar is not None:
+            instance.avatar = avatar
         if description is not None:
             instance.description = description
         if online is not None:
             if online:
                 instance.online = True
                 instance.last_seen = None
-            else:
+            elif online is False:
                 instance.online = False
                 instance.last_seen = timezone.now()    
         instance.save()
@@ -224,6 +262,10 @@ class PlayerLoginSerializer(serializers.Serializer):
         user = authenticate(username=username, password=password)
         if user is None:
             raise serializers.ValidationError({"code": 1013}) # Nom ou mot de passe incorrect
+
+        player.online = True
+        player.last_seen = None
+        player.save()
 
         data['user'] = user
         data['player'] = player
@@ -347,17 +389,6 @@ class FriendRequestRejectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship
         fields = []
-
-    def validate(self, data):
-        friendship = self.instance
-        request_user = self.context['request'].user
-
-        if friendship.player_2.user != request_user:
-            raise serializers.ValidationError({"code": 1020})  # "Seul le destinataire peut rejeter cette demande."
-        if friendship.status != 'pending':
-            raise serializers.ValidationError({"code": 1021})  # "Cette demande a déjà été traitée."
-
-        return data
 
     def to_representation(self, instance):
         return {"code": 1000}
