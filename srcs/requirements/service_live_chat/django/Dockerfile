@@ -5,8 +5,7 @@ FROM python@sha256:2003de5fe1ed2b09578778c83fc0a6a199a443077b5d9d02a3bd04a6ef5ea
 
 #args of build
 ARG APP_DIR=/django_web_app
-ARG PROJECT_DIR=transcendence
-ARG ENV_DIR=$APP_DIR/env/bin/activate
+ARG ENV_DIR=$APP_DIR/.env/bin/activate
 
 #Installing utils
 RUN apk update \
@@ -17,17 +16,15 @@ RUN mkdir $APP_DIR /static
 WORKDIR $APP_DIR
 
 COPY ./conf/requirements.txt .
+COPY ./conf/manage.py .
 
-RUN	python3 -m venv env \
+RUN	python3 -m venv .env \
 	&& source $ENV_DIR \
 	&& pip install --upgrade pip \
-	&& pip install -r requirements.txt \
-	&& django-admin startproject $PROJECT_DIR
-
-WORKDIR	$APP_DIR/$PROJECT_DIR
+	&& pip install -r requirements.txt
 
 RUN source $ENV_DIR \
-	&& python3 manage.py startapp pong
+	&& python3 manage.py startapp core
 
 COPY ./tools/init.sh ./init.sh
 RUN chmod +x init.sh

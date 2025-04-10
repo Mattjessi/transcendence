@@ -121,8 +121,8 @@
               ipv4_address: 172.20.0.42
           hostname: service_game_pong_django
           volumes:
-            - "./requirements/service_game_pong/django/conf/pong:/django_web_app/transcendence/pong"
-            - "./requirements/service_game_pong/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_game_pong/django/conf/core:/django_web_app/core"
+            - "./requirements/service_game_pong/django/conf/django_game_pong:/django_web_app/django_game_pong"
             - "./requirements/service_game_pong/django/conf/static:/django_web_app/transcendence/staticfiles"
               #- "./requirements/service_game_pong/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
@@ -164,10 +164,10 @@
               ipv4_address: 172.20.0.44
           hostname: service_live_chat_django
           volumes:
-            - "./requirements/service_live_chat/django/conf/pong:/django_web_app/transcendence/pong"
-            - "./requirements/service_live_chat/django/conf/transcendence:/django_web_app/transcendence/transcendence"
+            - "./requirements/service_live_chat/django/conf/core:/django_web_app/core"
+            - "./requirements/service_live_chat/django/conf/django_live_chat:/django_web_app/django_live_chat"
             - "./requirements/service_live_chat/django/conf/static:/django_web_app/transcendence/staticfiles"
-              #- "./requirements/service_live_chat/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
+            #- "./requirements/service_live_chat/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
         service_live_chat_postgresql:
           image: postgres@sha256:7b86711ac72674c8f2cf0fad7fd55cb07ae709c62fa0cddfa78e28e985fffe09
