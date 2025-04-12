@@ -1,117 +1,91 @@
 import json
-import asyncio
-from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .pong import pong_game
+from channels.db import database_sync_to_async
 
-
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-        self.room_group_name = 'test'
-
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
-        )
-
-        self.accept()
-
-        self.send(text_data=json.dumps({
-            'type':'connection_established',
-            'message':'You are now connected!'
-        }))
-
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type':'chat_message',
-                'message':message
-            }
-        )
-
-    def chat_message(self, event):
-        message = event['message']
-
-        self.send(text_data=json.dumps({
-            'type':'chat',
-            'message':message
-        }))
-
-
-
-class PongConsumer(AsyncWebsocketConsumer):
+class GeneralChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.match_id = self.scope['url_route']['kwargs']['match_id']
-        self.room_group_name = f"pong_room_{self.match_id}"
+        self.user = self.scope['user']
+        self.player_id = self.scope.get('player_id')
 
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-        self.game = await self.get_active_game(self.match_id)
-        if not self.game:
-            await self.send(text_data=json.dumps({"error": "Aucun round en cours"}))
-            await self.close()
-            return
-        
-        self.running = True
-        self.periodic_task = asyncio.create_task(self.send_periodic_data())
-
-    async def send_periodic_data(self):
-        """ Envoie les mises à jour du jeu en temps réel """
-        while self.running:
-            ball_x, ball_y = await pong_game(self.game.id)
-            self.game = await self.get_game(self.game.id)
+        if not self.user.is_authenticated:
             await self.send(text_data=json.dumps({
-                'type': 'data_pong',
-                'x': self.game.ball_position.get('x', 0),
-                'y': self.game.ball_position.get('y', 0),
-                'paddleL': self.game.paddle_position.get('paddle_l', 0),
-                'paddleR': self.game.paddle_position.get('paddle_r', 0)
+                "code": 3012  # Utilisateur non authentifié
             }))
+            await self.close(code=3012)
+            return
 
-            await asyncio.sleep(1 / 60)
-
-    async def receive(self, text_data):
-        """ Gère les mouvements des joueurs """
-        text_data_json = json.loads(text_data)
-        action = text_data_json.get('action')
-        move = text_data_json.get('type')
-
-        if action == 'move_up':
-            if move == 'paddle_l':
-                self.game.paddle_position['paddle_l'] -= 5
-            if move == 'paddle_r':
-                self.game.paddle_position['paddle_r'] -= 5
-        elif action == 'move_down':
-            if move == 'paddle_l':
-                self.game.paddle_position['paddle_l'] += 5
-            if move == 'paddle_r':
-                self.game.paddle_position['paddle_r'] += 5
-
-        await self.save_game_state()
+        self.group_name = "general_chat"
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.send(text_data=json.dumps({
+            "code": 1000  # Connexion réussie
+        }))
 
     async def disconnect(self, close_code):
-        """ Gère la déconnexion du joueur """
-        self.running = False
-        if hasattr(self, 'periodic_task'):
-            self.periodic_task.cancel()
+        if hasattr(self, 'group_name'):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+    @database_sync_to_async
+    def is_blocked(self, sender_player_id):
+        from shared_models.models import Player, Block
+        """Vérifie si le joueur connecté a bloqué ou est bloqué par le sender."""
+        try:
+            current_player = Player.objects.get(id=self.player_id)
+            sender_player = Player.objects.get(id=sender_player_id)
+            return (Block.objects.filter(blocker=current_player, blocked=sender_player).exists() or
+                    Block.objects.filter(blocker=sender_player, blocked=current_player).exists())
+        except Player.DoesNotExist:
+            return True  # Si un joueur n'existe pas, on bloque par sécurité
 
-    # ---------------------
-    # Méthodes Utilitaires
-    # ---------------------
-    
-    @sync_to_async
-    def get_active_game(self, match_id):
-        from core.models import Game
-        return Game.objects.filter(match__id=match_id, status="En cours").first()
+    async def chat_message(self, event):
+        message = event['message']
+        sender_id = message.get('sender')
 
-    @sync_to_async
-    def save_game_state(self):
-        self.game.save()
+        # Vérifier si le joueur connecté a bloqué ou est bloqué par le sender
+        is_blocked = await self.is_blocked(sender_id)
+        if not is_blocked:
+            await self.send(text_data=json.dumps({
+                'message': message
+            }))
+
+class PrivateChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope['user']
+        player_id = self.scope.get('player_id')
+
+        await self.accept()
+
+        if not user.is_authenticated or player_id is None:
+            await self.send(text_data=json.dumps({
+                "code": 3014  # Utilisateur non authentifié ou aucun joueur associé
+            }))
+            await self.close(code=3014)
+            return
+
+        self.player_id = self.scope['url_route']['kwargs']['player_id']
+        if str(player_id) != self.player_id:
+            await self.send(text_data=json.dumps({
+                "code": 3015 # Incohérence entre l'ID du joueur dans le token et l'URL
+            }))
+            await self.close(code=3015)
+            return
+
+        self.group_name = f"private_chat_{self.player_id}"
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.send(text_data=json.dumps({
+            "code": 1000  # Connexion réussie
+        }))
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'group_name'):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        pass 
+
+    async def chat_message(self, event):
+        message = event['message']
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))

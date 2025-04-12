@@ -13,7 +13,6 @@ from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'players', views.PlayerViewSet)
-router.register(r'games', views.GameViewSet)
 router.register(r'matches', views.MatchViewSet, basename='match')
 router.register(r'tournaments', views.TournamentViewSet)
 

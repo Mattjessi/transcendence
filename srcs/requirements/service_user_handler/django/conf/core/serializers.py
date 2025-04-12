@@ -2,7 +2,7 @@ import uuid
 from rest_framework import serializers
 from django.db import models
 from django.utils import timezone
-from .models import Player, Game, Match, Tournament, Friendship, Block
+from shared_models.models import Player, Match, Tournament, Friendship, Block
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.contrib.auth.hashers import check_password
@@ -51,14 +51,6 @@ class PlayerSerializer(serializers.ModelSerializer):
             del fields['description']
 
         return fields
-
-class GameSerializer(serializers.ModelSerializer):
-    player_1 = PlayerSerializer(read_only=True)
-    player_2 = PlayerSerializer(read_only=True)
-
-    class Meta:
-        model = Game
-        fields = '__all__'
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:

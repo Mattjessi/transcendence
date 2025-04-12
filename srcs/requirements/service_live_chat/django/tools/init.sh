@@ -1,9 +1,11 @@
 #!/bin/sh
 
-sed -i "s/\${DOMAIN_NAME}/$DOMAIN_NAME/g" /django_web_app/django_user_handler/settings.py
+sed -i "s/\${DOMAIN_NAME}/$DOMAIN_NAME/g" /django_web_app/django_live_chat/settings.py
 
 source /django_web_app/.env/bin/activate \
-	&& python3 manage.py makemigrations --no-input \
+	&& python3 manage.py makemigrations shared_models --no-input \
+	&& python3 manage.py migrate --fake-initial --no-input \
+	&& python3 manage.py makemigrations core --no-input \
 	&& python3 manage.py migrate --fake-initial --no-input \
 	&& (
         python3 -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_live_chat.settings'); import django; django.setup(); from django.contrib.auth.models import User; exit(0 if User.objects.filter(username='$SUPER_USER_NAME').exists() else 1)" \

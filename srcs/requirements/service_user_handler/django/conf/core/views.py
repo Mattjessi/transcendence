@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import InvalidToken
 
 # Local imports
-from .models import Player, Game, Match, Tournament, Friendship, Block
+from shared_models.models import Player, Match, Tournament, Friendship, Block
 from . import serializers
 
 # ==============================
@@ -29,10 +29,6 @@ class AdminViewSet(viewsets.ModelViewSet):
 class PlayerViewSet(AdminViewSet):
     queryset = Player.objects.all()
     serializer_class = serializers.PlayerSerializer
-
-class GameViewSet(AdminViewSet):
-    queryset = Game.objects.all()
-    serializer_class = serializers.GameSerializer
 
 class MatchViewSet(AdminViewSet):
     queryset = Match.objects.all()

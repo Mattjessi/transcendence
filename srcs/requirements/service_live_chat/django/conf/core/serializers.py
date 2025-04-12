@@ -1,81 +1,88 @@
 from rest_framework import serializers
-from .models import Player, Game, Match, Tournament, Friendship, Block
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
+from .models import PrivateMessage, GeneralMessage
+from shared_models.models import Player, Block, Friendship
 
-class PlayerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Player
-        fields = '__all__'
-
-class GameSerializer(serializers.ModelSerializer):
-    player_1 = PlayerSerializer(read_only=True)
-    player_2 = PlayerSerializer(read_only=True)
+class GeneralMessageSerializer(serializers.ModelSerializer):
+    sender = serializers.CharField(source='sender.id', read_only=True)  # Affiche l'ID du Player
 
     class Meta:
-        model = Game
-        fields = '__all__'
-
-class MatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Match
-        fields = '__all__'
-
-
-class TournamentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Player
-        fields = '__all__'
-
-class FriendshipSerializer(serializers.ModelSerializer):
-    player_1_name = serializers.CharField(source='player_1.name')
-    player_2_name = serializers.CharField(source='player_2.name')
-    status = serializers.CharField()
-
-    class Meta:
-        model = Friendship
-        fields = ['player_1_name', 'player_2_name', 'status', 'created_at']
-
-
-class BlockSerializer(serializers.ModelSerializer):
-    blocker_name = serializers.CharField(source='blocker.name')
-    blocked_name = serializers.CharField(source='blocked.name')
-
-    class Meta:
-        model = Block
-        fields = ['blocker_name', 'blocked_name', 'created_at']
-
-
-
-
-class RegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True)
-    token = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ['username', 'password', 'password2', 'token']
-        extra_kwargs = {'password': {'write_only': True}}
+        model = GeneralMessage
+        fields = ['id', 'content', 'timestamp', 'sender']
+        read_only_fields = ['id', 'timestamp', 'sender']
 
     def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({"password": "Les mots de passe ne correspondent pas."})
-        if User.objects.filter(username=data['username']).exists():
-            raise serializers.ValidationError({"username": "Ce nom d'utilisateur est déjà pris."})
+        # Récupérer l'utilisateur authentifié (sender)
+        user = self.context['request'].user
+
+        # Récupérer le Player associé à l'utilisateur (sender)
+        try:
+            sender_player = Player.objects.get(user=user)
+        except Player.DoesNotExist:
+            raise serializers.ValidationError({"code": 2001})  # Profil de joueur non trouvé
+
+        # Ajouter le sender (Player) aux données validées
+        data['sender'] = sender_player
         return data
 
-    def create(self, validated_data):
-        validated_data.pop('password2')
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            password=validated_data['password']
-        )
-        Player.objects.create(user=user, name=validated_data['username'])
-        return user
+    def to_representation(self, instance):
+        # Retourner un code de succès après la création
+        return {"code": 1000}
 
-    def get_token(self, obj):
-        refresh = RefreshToken.for_user(obj)
-        return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
+class PrivateMessageSerializer(serializers.ModelSerializer):
+    sender = serializers.CharField(source='sender.id', read_only=True)  # Affiche l'ID du Player
+    receiver = serializers.CharField(source='receiver.id', read_only=True)  # Affiche l'ID du Player
+
+    class Meta:
+        model = PrivateMessage
+        fields = ['id', 'content', 'timestamp', 'sender', 'receiver']
+        read_only_fields = ['id', 'timestamp', 'sender', 'receiver']
+
+    def validate(self, data):
+        # Récupérer l'utilisateur authentifié (sender)
+        user = self.context['request'].user
+
+        # Récupérer le Player associé à l'utilisateur (sender)
+        try:
+            sender_player = Player.objects.get(user=user)
+        except Player.DoesNotExist:
+            raise serializers.ValidationError({"code": 2002})  # Profil de joueur non trouvé
+
+        # Récupérer le receiver_player_id à partir du contexte (passé par la vue depuis l'URL)
+        receiver_player_id = self.context.get('receiver_player_id')
+        if not receiver_player_id:
+            raise serializers.ValidationError({"code": 2003})  # L'ID du joueur destinataire est requis
+
+        # Récupérer le Player du destinataire
+        try:
+            receiver_player = Player.objects.get(id=receiver_player_id)
+        except Player.DoesNotExist:
+            raise serializers.ValidationError({"code": 2004})  # Joueur destinataire non trouvé
+
+        # Vérifier si le sender et le receiver sont amis (Friendship avec status='accepted')
+        friendship_exists = Friendship.objects.filter(
+            status='accepted',
+            player_1=sender_player,
+            player_2=receiver_player
+        ).exists() or Friendship.objects.filter(
+            status='accepted',
+            player_1=receiver_player,
+            player_2=sender_player
+        ).exists()
+
+        if not friendship_exists:
+            raise serializers.ValidationError({"code": 2005})  # Vous ne pouvez envoyer des messages qu'à vos amis
+
+        # Vérifier si le sender et le receiver sont bloqués
+        if Block.objects.filter(blocker=sender_player, blocked=receiver_player).exists():
+            raise serializers.ValidationError({"code": 2006})  # Vous ne pouvez pas envoyer de message à un utilisateur que vous avez bloqué
+        if Block.objects.filter(blocker=receiver_player, blocked=sender_player).exists():
+            raise serializers.ValidationError({"code": 2007})  # Vous ne pouvez pas envoyer de message à un utilisateur qui vous a bloqué
+
+        # Ajouter le sender (Player) et le receiver (Player) aux données validées
+        data['sender'] = sender_player
+        data['receiver'] = receiver_player
+        return data
+
+    def to_representation(self, instance):
+        # Retourner un code de succès après la création
+        return {"code": 1000}

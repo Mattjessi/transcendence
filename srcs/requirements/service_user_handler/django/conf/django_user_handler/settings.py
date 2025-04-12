@@ -28,7 +28,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ['transcendence.fr']
+CSRF_TRUSTED_ORIGINS = ['https://transcendence.fr']
 
 
 
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
 
     # App locale
     'core',
+    'shared_models',
 ]
 
 
@@ -92,8 +94,15 @@ ALLOWED_HOSTS = ['transcendence.fr']
 CSRF_TRUSTED_ORIGINS = ['https://transcendence.fr']
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # À désactiver en production
-CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_ALL_ORIGINS = False  # À désactiver en production
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 
 REST_FRAMEWORK = {
