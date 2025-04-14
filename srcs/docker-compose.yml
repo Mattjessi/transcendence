@@ -81,7 +81,7 @@
             - "./requirements/service_user_handler/django/conf/django_user_handler:/django_web_app/django_user_handler"
             - "./requirements/service_user_handler/django/conf/static:/django_web_app/transcendence/staticfiles"
             - "./requirements/service_user_handler/django/conf/media:/django_web_app/media"
-            - "./requirements/shared_models:/django_web_app/shared_models"
+            - "./requirements/service_user_handler/django/conf/shared_models:/django_web_app/shared_models"
               #- "./requirements/service_user_handler/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
         service_user_handler_postgresql:
@@ -123,9 +123,9 @@
           hostname: service_game_pong_django
           volumes:
             - "./requirements/service_game_pong/django/conf/core:/django_web_app/core"
-            - "./requirements/service_game_pong/django/conf/django_live_chat:/django_web_app/django_live_chat"
+            - "./requirements/service_game_pong/django/conf/django_game_pong:/django_web_app/django_game_pong"
             - "./requirements/service_game_pong/django/conf/static:/django_web_app/transcendence/staticfiles"
-            - "./requirements/shared_models:/django_web_app/shared_models"
+            - "./requirements/service_game_pong/django/conf/shared_models:/django_web_app/shared_models"
               #- "./requirements/service_game_pong/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
         service_game_pong_postgresql:
@@ -169,7 +169,7 @@
             - "./requirements/service_live_chat/django/conf/core:/django_web_app/core"
             - "./requirements/service_live_chat/django/conf/django_live_chat:/django_web_app/django_live_chat"
             - "./requirements/service_live_chat/django/conf/static:/django_web_app/transcendence/staticfiles"
-            - "./requirements/shared_models:/django_web_app/shared_models"
+            - "./requirements/service_live_chat/django/conf/shared_models:/django_web_app/shared_models"
             #- "./requirements/service_live_chat/django/conf/utils/vault_utils.py:/django_web_app/transcendence/utils/vault_utils.py"
 
         service_live_chat_postgresql:
