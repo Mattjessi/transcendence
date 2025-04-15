@@ -102,3 +102,88 @@ curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
   }
 }' \
 && echo -e "\n" \
+&& curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
+  "name": "postgres-sink-connector_7",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://service_game_pong_postgresql:5432/transcendence",
+    "connection.username": "biaroun",
+    "connection.password": "azerty",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "primary.key.mode": "record_key",
+    "schema.evolution": "basic",
+    "database.time_zone": "UTC",
+    "topics": "dbz.public.shared_models_player"
+  }
+}' \
+&& echo -e "\n" \
+&& curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
+  "name": "postgres-sink-connector_8",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://service_game_pong_postgresql:5432/transcendence",
+    "connection.username": "biaroun",
+    "connection.password": "azerty",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "primary.key.mode": "record_key",
+    "schema.evolution": "basic",
+    "database.time_zone": "UTC",
+    "topics": "dbz.public.shared_models_friendship"
+  }
+}' \
+&& echo -e "\n" \
+&& curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
+  "name": "postgres-sink-connector_9",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://service_game_pong_postgresql:5432/transcendence",
+    "connection.username": "biaroun",
+    "connection.password": "azerty",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "primary.key.mode": "record_key",
+    "schema.evolution": "basic",
+    "database.time_zone": "UTC",
+    "topics": "dbz.public.shared_models_block"
+  }
+}' \
+&& echo -e "\n" \
+&& curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
+  "name": "postgres-sink-connector_10",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://service_game_pong_postgresql:5432/transcendence",
+    "connection.username": "biaroun",
+    "connection.password": "azerty",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "primary.key.mode": "record_key",
+    "schema.evolution": "basic",
+    "database.time_zone": "UTC",
+    "topics": "dbz.public.shared_models_tournament"
+  }
+}' \
+&& echo -e "\n" \
+&& curl -sf -H 'Content-Type: application/json' debezium:8083/connectors --data '{
+  "name": "postgres-sink-connector_11",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://service_game_pong_postgresql:5432/transcendence",
+    "connection.username": "biaroun",
+    "connection.password": "azerty",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "primary.key.mode": "record_key",
+    "schema.evolution": "basic",
+    "database.time_zone": "UTC",
+    "topics": "dbz.public.shared_models_match"
+  }
+}' \
+&& echo -e "\n" \

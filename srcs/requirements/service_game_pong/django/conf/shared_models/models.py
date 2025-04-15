@@ -22,6 +22,9 @@ class Player(models.Model):
 
     friends = models.ManyToManyField('self', symmetrical=False, through='Friendship', related_name='friends_of')
 
+    class Meta:
+        db_table = 'dbz_public_shared_models_player'
+
     def __str__(self):
         return self.name
 
@@ -36,6 +39,7 @@ class Friendship(models.Model):
     )
 
     class Meta:
+        db_table = 'dbz_public_shared_models_friendship'
         unique_together = ('player_1', 'player_2')
 
     def __str__(self):
@@ -47,6 +51,7 @@ class Block(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = 'dbz_public_shared_models_block'
         unique_together = ['blocker', 'blocked']  # Un joueur ne peut bloquer un autre joueur qu'une seule fois
 
     def __str__(self):
@@ -61,6 +66,9 @@ class Tournament(models.Model):
     players = models.ManyToManyField(Player, related_name='tournaments')
     winner = models.ForeignKey(Player, on_delete=models.SET_NULL, null=True, blank=True, related_name='tournaments_won')
     status = models.CharField(choices=StatusChoices.choices, max_length=10, default=StatusChoices.EN_COURS)
+
+    class Meta:
+        db_table = 'dbz_public_shared_models_tournament'
     
 class Match(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -71,6 +79,9 @@ class Match(models.Model):
     player_2 = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='matches_as_player_2', null=True, blank=True)
     winner = models.ForeignKey(Player, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_won')
     status = models.CharField(choices=StatusChoices.choices, max_length=10, default=StatusChoices.EN_COURS)
+
+    class Meta:
+        db_table = 'dbz_public_shared_models_match'
 
     class TypeChoices(models.TextChoices):
         IA = 'IA'
