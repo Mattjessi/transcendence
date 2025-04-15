@@ -20,6 +20,7 @@
             - "static_service_app:/static/api"
             - "static_service_chat:/static/chat"
             - "./requirements/service_user_handler/django/conf/static:/static/users"
+            - "./requirements/service_user_handler/django/conf/media:/static/media"
             - "./requirements/service_game_pong/django/conf/static:/static/pong"
             - "./requirements/service_live_chat/django/conf/static:/static/live_chat"
 

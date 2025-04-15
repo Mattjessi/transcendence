@@ -208,3 +208,5 @@ CORS_ALLOW_METHODS = [
 
 # Autoriser les credentials (cookies, tokens, etc.)
 CORS_ALLOW_CREDENTIALS = True
+
+LOGOUT_REDIRECT_URL = '/live_chat/admin/'
