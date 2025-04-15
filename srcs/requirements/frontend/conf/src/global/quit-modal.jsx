@@ -1,6 +1,7 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Modal, Button } from "react-bootstrap"
+import axios from 'axios'
 import "./style.css"
 
 function QuitModal({ quit, setQuit }) {
@@ -9,11 +10,42 @@ function QuitModal({ quit, setQuit }) {
 
 	const handleClose = () => setQuit(false)
 
-	const disconnect = () => {
+	const disconnect = async (e) => {
+		//localStorage.removeItem("accessToken")
+		//localStorage.removeItem("refreshToken")
+		e.preventDefault()
+		try {
+			const Atoken = localStorage.getItem('accessToken')
+			const Rtoken = localStorage.getItem('refreshToken')
+			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
+			const response = await axios.post('http://transcendence.fr/users/api/logout/', {token: Rtoken}, config)
+			if (response.data.code == 1000) {
+				localStorage.removeItem("accessToken")
+				localStorage.removeItem("refreshToken")
+				localStorage.removeItem("playerID")
+				localStorage.removeItem("playerName")
+				handleClose()
+				navigate("/")
+			}
+		}
+		catch (error) {
+			console.log(error)
+			handleClose()
+		}
+	}
 
-		handleClose()
-		localStorage.removeItem("jwt")
-		navigate("/")
+	const resetall = async (e) => {
+		e.preventDefault()
+		try {
+			localStorage.removeItem("accessToken")
+			localStorage.removeItem("refreshToken")
+			localStorage.removeItem("playerID")
+			localStorage.removeItem("playerName")
+		}
+		catch (error) {
+			console.log(error)
+			handleClose()
+		}
 	}
 
 	return (
@@ -24,6 +56,7 @@ function QuitModal({ quit, setQuit }) {
 			<Modal.Body className="global-quit-button">
 				<Button onClick={disconnect} className="global-quit-yes">Yes</Button>
 				<Button onClick={handleClose} className="global-quit-no">No</Button>
+				<Button onClick={resetall} className="global-quit-no">Reset</Button>
 			</Modal.Body>
 		</Modal>
 	)

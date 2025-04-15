@@ -1,50 +1,34 @@
-import React, { useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useEffect, useRef } from "react"
 import Gameplay from "../gameplay/menu/page.jsx"
 import UserPass from "./UserPass.jsx"
-import ResizeScreen from "../global/resize-screen.jsx"
-import './style.css'
 
 function Login() {
 
 	const canva = useRef(null)
 
-	const navigate = useNavigate()
-
-	const { resize } = ResizeScreen()
-
 	useEffect(() => {
-
-		const token = localStorage.getItem('jwt')
-
-		if (token)
-		  navigate('/home')
-	  }, [navigate])
-
-	useEffect(() => {
-
-		if (canva.current) {
+		if (canva.current)
 			canva.current.style.filter = 'blur(5px)'
-		}
-
 	}, [])
 
 	return (
 		<>
 			<header>
-				<nav className="navbar fixed-top p-2">
-					<div className="container-fluid p-0 m-0">
-						<h1 className="navbar-brand text-bg-dark fw-bolder fs-1 m-0 p-0">Pong.</h1>
-					</div>
-				</nav>
+				<div className="container position-relative">
+					<h1 className="position-relative text-center text-light fw-bolder z-3 p-5 user-select-none" 
+						style={{textShadow: "3px 3px 5px rgba(0, 0, 0, 0.7)", fontSize: '6rem'}}>
+							Pong.
+					</h1>;
+				</div>
 			</header>
 			<main>
-				<div className="position-fixed">
-					<Gameplay canva={canva} className="background-canvas"/>
-				</div>
-				<div className="position-absolute top-0 d-flex justify-content-center align-items-center vh-100 w-100">
-					<div className="text-bg-dark px-3 px-lg-5 pt-2 pt-lg-4 pb-3 pb-lg-4">
-						<UserPass/>
+				<div className="position-fixed top-0">
+					<Gameplay canva={canva}/>
+					<div className="position-absolute top-0 d-flex justify-content-center align-items-center vh-100 w-100">
+						<div className="rounded border border-black border-2 px-3 px-lg-5 pt-2 pt-lg-4 pb-3 pb-lg-4"
+							style={{background: "rgba(0, 0, 0, 0.7)"}}>
+							<UserPass/>
+						</div>
 					</div>
 				</div>
 			</main>
