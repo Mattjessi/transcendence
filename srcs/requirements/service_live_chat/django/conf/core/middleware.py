@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 from channels.auth import AuthMiddlewareStack
 from shared_models.models import Player
 import asyncio
+from urllib.parse import parse_qs
 
 # Middleware existant pour l'authentification JWT
 @database_sync_to_async
@@ -24,15 +25,11 @@ class JWTAuthMiddleware(BaseMiddleware):
         self.inner = inner
 
     async def __call__(self, scope, receive, send):
-        headers = dict(scope['headers'])
-        token = None
+        query_string = parse_qs(scope['query_string'].decode())
+        token_list = query_string.get('token', None)
 
-        if b'authorization' in headers:
-            auth_header = headers[b'authorization'].decode('utf-8')
-            if auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
-
-        if token:
+        if token_list:
+            token = token_list[0]
             scope['user'] = await get_user_from_token(token)
             if scope['user'].is_authenticated:
                 try:
