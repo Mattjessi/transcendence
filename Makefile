@@ -54,19 +54,7 @@ all:
 					./srcs/requirements/service_game_pong/postgresql/conf/data/pg_commit_ts \
 					./srcs/requirements/service_game_pong/postgresql/conf/data/pg_notify \
 					./srcs/requirements/service_game_pong/postgresql/conf/data/pg_logical/mappings \
-					./srcs/requirements/service_game_pong/postgresql/conf/data/pg_logical/snapshots \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_serial \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_stat_tmp \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_snapshots \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_twophase \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_replslot \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_wal/archive_status \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_dynshmem \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_tblspc \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_commit_ts \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_notify \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_logical/mappings \
-					./srcs/requirements/service_live_chat/postgresql/conf/data/pg_logical/snapshots
+					./srcs/requirements/service_game_pong/postgresql/conf/data/pg_logical/snapshots
 
 	@if [ ! -d "./volume/smart_contract" ]; then \
 		sudo mkdir -p "./volume/smart_contract"; \

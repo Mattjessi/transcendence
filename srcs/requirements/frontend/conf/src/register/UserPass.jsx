@@ -4,21 +4,6 @@ import { Button, Form } from "react-bootstrap"
 import ErrorModal from "../global/error-modal"
 import axios from 'axios'
 
-const getCookie = (name) => {
-    let cookieValue = null
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';')
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim()
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-                break
-            }
-        }
-    }
-    return cookieValue
-}
-
 function UserPass() {
 
 	const navigate = useNavigate()
@@ -40,23 +25,14 @@ function UserPass() {
 	const hideModal = () => setShow(false)
 	const [code, setCode] = useState(0)
 
-	useEffect(() => {
-        axios.defaults.withCredentials = true // Permet d’envoyer/recevoir les cookies
-    }, [])
-
 	const sendAuth = async (e) => {
 		e.preventDefault()
-		const csrfToken = getCookie('csrftoken')
 		try {
 			const response = await axios.post('http://transcendence.fr/users/api/register/', {
 				username: username,
 				password: password1,
 				password2: password2
-			},
-			{
-				headers: {
-					'X-CSRFToken': csrfToken // Ajoute le jeton CSRF dans l’en-tête
-				}})
+			})
 			//console.log(response.data)
 			if (response.data.code == 1000) {
 				navigate("/")
@@ -77,7 +53,6 @@ function UserPass() {
 
 	return (
         <Form>
-			{errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
             <Form.Group className="fs-5 fs-lg-4 mb-2 mb-lg-4">
                 <Form.Label className="mb-2 text-light" htmlFor="username">Username</Form.Label>
                 <Form.Control
