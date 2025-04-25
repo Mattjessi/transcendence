@@ -26,6 +26,8 @@ RUN	python3 -m venv .env \
 RUN source $ENV_DIR \
 	&& python3 manage.py startapp core
 
+COPY ./conf/models.py /django_web_app/.env/lib/python3.13/site-packages/django/contrib/auth/models.py
+
 COPY ./tools/init.sh ./init.sh
 RUN chmod +x init.sh
 
