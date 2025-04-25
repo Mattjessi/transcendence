@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -179,6 +180,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False  # Ne pas permettre à tous les origines par défaut
 CORS_ALLOWED_ORIGINS = [
     'https://transcendence.fr:443',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://transcendence.fr:443',
+    'https://transcendence.fr',
 ]
 
 # Autoriser les en-têtes spécifiques (nécessaire pour les tokens JWT et WebSocket)

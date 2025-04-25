@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -85,7 +86,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django_user_handler.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    'https://transcendence.fr:443',  # Adresse de ton frontend
+    'https://transcendence.fr:443', # Adresse de ton frontend
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://transcendence.fr:443',
+    'https://transcendence.fr',
 ]
 
 ALLOWED_HOSTS = ['transcendence.fr']
