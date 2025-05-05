@@ -97,6 +97,9 @@
                 #- "./requirements/service_user_handler/postgresql/tools/user_handler_init.sql:/docker-entrypoint-initdb.d/01_init.sql"
                 - "./requirements/service_user_handler/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
                 - "./requirements/service_user_handler/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+                - "./requirements/service_user_handler/postgresql/tools/replicat_init_01.sh:/docker-entrypoint-initdb.d/replicat_init_01.sh"
+                - "./requirements/service_user_handler/postgresql/tools/replicat_init_02.sh:/docker-entrypoint-initdb.d/replicat_init_02.sh"
+                - "./requirements/service_user_handler/postgresql/tools/replicat_init_03.sh:/docker-entrypoint-initdb.d/replicat_init_03.sh"
           command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
 
         service_game_pong_django:
@@ -141,6 +144,8 @@
                 #- "./requirements/service_game_pong/postgresql/tools/game_pong_init.sql:/docker-entrypoint-initdb.d/01_init.sql"
                 - "./requirements/service_game_pong/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
                 - "./requirements/service_game_pong/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+                - "./requirements/service_game_pong/postgresql/tools/replicat_init_01.sh:/docker-entrypoint-initdb.d/replicat_init_01.sh"
+                - "./requirements/service_game_pong/postgresql/tools/replicat_init_02.sh:/docker-entrypoint-initdb.d/replicat_init_02.sh"
           command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
 
         service_live_chat_django:
@@ -185,6 +190,8 @@
                 #- "./requirements/service_live_chat/postgresql/tools/live_chat_init.sql:/docker-entrypoint-initdb.d/01_init.sql"
                 - "./requirements/service_live_chat/postgresql/conf/postgresql.conf:/etc/postgresql/postgresql.conf"
                 - "./requirements/service_live_chat/postgresql/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf"
+                - "./requirements/service_live_chat/postgresql/tools/replicat_init_01.sh:/docker-entrypoint-initdb.d/replicat_init_01.sh"
+                - "./requirements/service_live_chat/postgresql/tools/replicat_init_02.sh:/docker-entrypoint-initdb.d/replicat_init_02.sh"
           command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "hba_file=/etc/postgresql/pg_hba.conf"]
 
         service_app_django:

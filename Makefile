@@ -125,3 +125,40 @@ fclean: clean
 	fi
 
 re: fclean all
+
+reset_base:
+	@sudo rm -rf ./srcs/requirements/service_user_handler/postgresql/conf/data/ \
+					./srcs/requirements/service_live_chat/postgresql/conf/data/ \
+					./srcs/requirements/service_game_pong/postgresql/conf/data/ \
+	&& \
+	sudo mkdir ./srcs/requirements/service_user_handler/postgresql/conf/data/ \
+					./srcs/requirements/service_live_chat/postgresql/conf/data/ \
+					./srcs/requirements/service_game_pong/postgresql/conf/data/ \
+	&& \
+	sudo chown 70:root ./srcs/requirements/service_user_handler/postgresql/conf/data/ \
+						./srcs/requirements/service_live_chat/postgresql/conf/data/ \
+						./srcs/requirements/service_game_pong/postgresql/conf/data/ \
+	&& \
+	docker restart service_user_handler_postgresql \
+	&& \
+	docker restart service_live_chat_postgresql \
+	&& \
+	docker restart service_game_pong_postgresql \
+	&& \
+	sleep 25 \
+	&& \
+	docker restart service_user_handler_django \
+	&& \
+	docker restart service_live_chat_django \
+	&& \
+	docker restart service_game_pong_django \
+	&& \
+	sleep 25 \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_user_handler_postgresql sh /docker-entrypoint-initdb.d/replicat_init_02.sh \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_game_pong_postgresql sh /docker-entrypoint-initdb.d/replicat_init_02.sh \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_live_chat_postgresql sh /docker-entrypoint-initdb.d/replicat_init_02.sh \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_user_handler_postgresql sh /docker-entrypoint-initdb.d/replicat_init_03.sh
