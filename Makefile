@@ -155,6 +155,12 @@ reset_base:
 	&& \
 	sleep 25 \
 	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_user_handler_postgresql sh /docker-entrypoint-initdb.d/replicat_init_01.sh \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_game_pong_postgresql sh /docker-entrypoint-initdb.d/replicat_init_01.sh \
+	&& \
+	sudo docker compose -f ./srcs/docker-compose.yml exec service_live_chat_postgresql sh /docker-entrypoint-initdb.d/replicat_init_01.sh \
+	&& \
 	sudo docker compose -f ./srcs/docker-compose.yml exec service_user_handler_postgresql sh /docker-entrypoint-initdb.d/replicat_init_02.sh \
 	&& \
 	sudo docker compose -f ./srcs/docker-compose.yml exec service_game_pong_postgresql sh /docker-entrypoint-initdb.d/replicat_init_02.sh \
