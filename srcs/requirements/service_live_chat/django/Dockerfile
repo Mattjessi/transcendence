@@ -26,6 +26,11 @@ RUN	python3 -m venv .env \
 RUN source $ENV_DIR \
 	&& python3 manage.py startapp core
 
+COPY ./conf/core ./core
+COPY ./conf/django_live_chat ./django_live_chat
+COPY ./conf/shared_models ./shared_models
+COPY ./conf/utils ./utils
+
 COPY ./tools/init.sh ./init.sh
 RUN chmod +x init.sh
 

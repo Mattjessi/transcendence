@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'shared_models',
     'core',
 
-
 ]
 
 MIDDLEWARE = [
