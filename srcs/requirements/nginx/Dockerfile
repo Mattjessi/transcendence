@@ -45,16 +45,16 @@ RUN git clone https://github.com/owasp-modsecurity/ModSecurity.git \
 	&& sed -i "s/SecAuditEngine RelevantOnly/SecAuditEngine off/" modsecurity.conf
 
 WORKDIR /etc/nginx/modsec
-COPY ./conf/main.conf ./main.conf
+COPY --chown=root:root ./conf/main.conf ./main.conf
 
 WORKDIR /etc/nginx
-COPY ./conf/nginx.conf ./nginx.conf
+COPY --chown=root:root ./conf/nginx.conf ./nginx.conf
 
 WORKDIR /etc/nginx/conf.d
 RUN rm default.conf
-COPY ./conf/transcendence_fr.conf ./transcendence_fr.conf
+COPY --chown=root:root ./conf/transcendence_fr.conf ./transcendence_fr.conf
 
-COPY ./tools/init_nginx.sh /tmp/init_nginx.sh
+COPY --chown=root:root ./tools/init_nginx.sh /tmp/init_nginx.sh
 RUN chmod +x /tmp/init_nginx.sh
 
 EXPOSE 443
