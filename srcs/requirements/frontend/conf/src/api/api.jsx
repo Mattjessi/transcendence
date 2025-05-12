@@ -4,7 +4,7 @@ import axios from 'axios';
 
 async function refreshAccessToken(Rtoken) {
     try {
-        const response = await axios.post('http://transcendence.fr/users/api/token/refresh/', { refresh: Rtoken })
+        const response = await axios.post('https://localhost:4343/users/api/token/refresh/', { refresh: Rtoken })
 		console.log(response)
         if (response.data.access) {
             localStorage.setItem("accessToken", response.data.access)

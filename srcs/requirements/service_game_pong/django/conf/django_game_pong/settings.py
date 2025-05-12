@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['transcendence.fr']
+ALLOWED_HOSTS = ['localhost']
 
 # Application definition
 
@@ -185,12 +185,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = False  # Ne pas permettre à tous les origines par défaut
 CORS_ALLOWED_ORIGINS = [
-    'https://transcendence.fr:443',
+    'https://localhost:4343',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://transcendence.fr:443',
-    'https://transcendence.fr',
+    'https://localhost:4343',
+    'https://localhost',
 ]
 
 # Autoriser les en-têtes spécifiques (nécessaire pour les tokens JWT et WebSocket)

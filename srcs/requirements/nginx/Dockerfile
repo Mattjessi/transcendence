@@ -12,7 +12,7 @@ RUN mkdir -p /etc/nginx/ssl /static/api /static/chat
 RUN openssl req -x509 -nodes \
 	-out /etc/nginx/ssl/transcendence.pem \
 	-keyout /etc/nginx/ssl/transcendence.key \
-	-subj "/C=FR/ST=Alpes-Maritimes/L=Nice/O=Ecole\ 42/OU=Ecole/CN=transcendence.fr/emailAddress=mcordes@student.42nice.fr"
+	-subj "/C=FR/ST=Alpes-Maritimes/L=Nice/O=Ecole\ 42/OU=Ecole/CN=localhost/emailAddress=mcordes@student.42nice.fr"
 
 WORKDIR /home
 RUN git clone https://github.com/owasp-modsecurity/ModSecurity.git \

@@ -23,7 +23,7 @@ function ProfileEdit() {
 			const Rtoken = localStorage.getItem('refreshToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			const params = { token: Rtoken }
-			const playerData = await axios.get('http://transcendence.fr/users/api/player/', {headers: config.headers, param: params})
+			const playerData = await axios.get('https://localhost:4343/users/api/player/', {headers: config.headers, param: params})
 			const data = playerData.data.filter(player => player.name == username)
 			if (data.length == 1)
 				setUser(data[0])
@@ -47,7 +47,7 @@ function ProfileEdit() {
 			const Rtoken = localStorage.getItem('refreshToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			const params = { token: Rtoken }
-			const response = await axios.put('http://transcendence.fr/users/api/player/update-info/', {headers: config.headers, param: params})
+			const response = await axios.put('https://localhost:4343/users/api/player/update-info/', {headers: config.headers, param: params})
 			console.log(response)
 		}
 		catch(error) {

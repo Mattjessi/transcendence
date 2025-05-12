@@ -25,18 +25,18 @@ function FriendModal({ friend, setFriend }) {
 
 		try {
 
-			const playerData = await axios.get('http://transcendence.fr/users/api/player/', {headers: config.headers, param: params})
+			const playerData = await axios.get('https://localhost:4343/users/api/player/', {headers: config.headers, param: params})
 			if (!playerData.data || !tab)
 				return
 
 			let data, friendData, blockData
 
 			if (tab != 'blocklist') {
-				friendData = await axios.get('http://transcendence.fr/users/api/friend/list/', {headers: config.headers, param: params})
+				friendData = await axios.get('https://localhost:4343/users/api/friend/list/', {headers: config.headers, param: params})
 				friendData = friendData.data
 			}
 			if (tab == 'addfriend' || tab == 'blocklist') {
-				blockData = await axios.get('http://transcendence.fr/users/api/block/list/', {headers: config.headers, param: params})
+				blockData = await axios.get('https://localhost:4343/users/api/block/list/', {headers: config.headers, param: params})
 				blockData = blockData.data
 			}
 
@@ -123,7 +123,7 @@ function FriendModal({ friend, setFriend }) {
 		try {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
-			const response = await axios.delete(`http://transcendence.fr/users/api/friend/remove/${playerID}/`,
+			const response = await axios.delete(`https://localhost:4343/users/api/friend/remove/${playerID}/`,
 				{headers: config.headers})
 			fonction(tab)
 		}
@@ -137,7 +137,7 @@ function FriendModal({ friend, setFriend }) {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			const params = { player_2: playerID }
-			const response = await axios.post('http://transcendence.fr/users/api/friend-request/send/', params, config)
+			const response = await axios.post('https://localhost:4343/users/api/friend-request/send/', params, config)
 			fonction(tab)
 		}
 		catch(error) {
@@ -150,7 +150,7 @@ function FriendModal({ friend, setFriend }) {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			const params = { blocked_id: playerID }
-			const response = await axios.post('http://transcendence.fr/users/api/block/add/', params, config)
+			const response = await axios.post('https://localhost:4343/users/api/block/add/', params, config)
 			fonction(tab)
 		}
 		catch(error) {
@@ -162,7 +162,7 @@ function FriendModal({ friend, setFriend }) {
 		try {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
-			const response = await axios.delete(`http://transcendence.fr/users/api/friend-request/cancel/${playerID}/`,
+			const response = await axios.delete(`https://localhost:4343/users/api/friend-request/cancel/${playerID}/`,
 				{headers: config.headers})
 			fonction(tab)
 		}
@@ -176,7 +176,7 @@ function FriendModal({ friend, setFriend }) {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			const params = { player_2: playerID }
-			const response = await axios.put(`http://transcendence.fr/users/api/friend-request/accept/${playerID}/`, params, config)
+			const response = await axios.put(`https://localhost:4343/users/api/friend-request/accept/${playerID}/`, params, config)
 			fonction(tab)
 		}
 		catch(error) {
@@ -188,7 +188,7 @@ function FriendModal({ friend, setFriend }) {
 		try {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
-			const response = await axios.delete(`http://transcendence.fr/users/api/friend-request/reject/${playerID}/`,
+			const response = await axios.delete(`https://localhost:4343/users/api/friend-request/reject/${playerID}/`,
 				{headers: config.headers})
 			fonction(tab)
 		}
@@ -202,7 +202,7 @@ function FriendModal({ friend, setFriend }) {
 			const Atoken = localStorage.getItem('accessToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
 			//const params = { player_2: playerID }
-			const response = await axios.delete(`http://transcendence.fr/users/api/block/remove/${playerID}/`,
+			const response = await axios.delete(`https://localhost:4343/users/api/block/remove/${playerID}/`,
 				{headers: config.headers})
 			fonction(tab)
 		}

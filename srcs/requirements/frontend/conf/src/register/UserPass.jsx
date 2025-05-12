@@ -28,7 +28,7 @@ function UserPass() {
 	const sendAuth = async (e) => {
 		e.preventDefault()
 		try {
-			const response = await axios.post('http://transcendence.fr/users/api/register/', {
+			const response = await axios.post('https://localhost:4343/users/api/register/', {
 				username: username,
 				password: password1,
 				password2: password2

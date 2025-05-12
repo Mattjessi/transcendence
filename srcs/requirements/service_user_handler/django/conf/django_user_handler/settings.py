@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['transcendence.fr']
+ALLOWED_HOSTS = ['localhost']
 
 
 
@@ -86,15 +86,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django_user_handler.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    'https://transcendence.fr:443', # Adresse de ton frontend
+    'https://localhost:4343', # Adresse de ton frontend
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://transcendence.fr:443',
-    'https://transcendence.fr',
+    'https://localhost:4343',
+    'https://localhost',
 ]
 
-ALLOWED_HOSTS = ['transcendence.fr']
+ALLOWED_HOSTS = ['localhost']
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False  # À désactiver en production

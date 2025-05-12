@@ -18,7 +18,7 @@ function QuitModal({ quit, setQuit }) {
 			const Atoken = localStorage.getItem('accessToken')
 			const Rtoken = localStorage.getItem('refreshToken')
 			const config = {headers: {Authorization: `Bearer ${Atoken}`}}
-			const response = await axios.post('http://transcendence.fr/users/api/logout/', {token: Rtoken}, config)
+			const response = await axios.post('https://localhost:4343/users/api/logout/', {token: Rtoken}, config)
 			if (response.data.code == 1000) {
 				localStorage.removeItem("accessToken")
 				localStorage.removeItem("refreshToken")
