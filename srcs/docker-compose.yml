@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "4343:443"
-    image: nginx:1.27.1
     container_name: nginx
     env_file: ./env/.env_nginx
     init: true
@@ -45,7 +44,6 @@ services:
     build:
       context: ./requirements/service_user_handler/django
       dockerfile: Dockerfile
-    image: python:3.13.0rc1_2
     container_name: service_user_handler_django
     env_file:
       - ./env/.env_nginx
@@ -84,7 +82,6 @@ services:
     build:
       context: ./requirements/service_game_pong/django
       dockerfile: Dockerfile
-    image: python:3.13.0rc1_game_pong
     container_name: service_game_pong_django
     env_file:
       - ./env/.env_nginx
@@ -122,7 +119,6 @@ services:
     build:
       context: ./requirements/service_live_chat/django
       dockerfile: Dockerfile
-    image: python:3.13.0rc1_live_chat
     container_name: service_live_chat_django
     env_file:
       - ./env/.env_nginx
