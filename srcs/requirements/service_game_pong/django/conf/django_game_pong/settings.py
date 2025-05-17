@@ -25,7 +25,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost']
 
 # Application definition
 
@@ -110,8 +109,6 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',   
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -181,9 +178,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
+# Autoriser les credentials (cookies, tokens, etc.)
+CORS_ALLOW_CREDENTIALS = True
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = False  # Ne pas permettre à tous les origines par défaut
+ALLOWED_HOSTS = ['localhost']
 CORS_ALLOWED_ORIGINS = [
     'https://localhost:4343',
 ]
@@ -215,7 +215,5 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# Autoriser les credentials (cookies, tokens, etc.)
-CORS_ALLOW_CREDENTIALS = True
 
 LOGOUT_REDIRECT_URL = '/pong/admin/'

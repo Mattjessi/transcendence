@@ -4,11 +4,14 @@ from . import views
 urlpatterns = [
     path('invitations/', views.InvitationListAPI.as_view(), name='invitation-list'),
     path('invitations/create/', views.InvitationCreateAPI.as_view(), name='invitation-create'),
+    path('invitations/<int:id>/cancel/', views.InvitationCancelAPI.as_view(), name='invitation-cancel'),
     path('invitations/<int:id>/accept/', views.InvitationAcceptAPI.as_view(), name='invitation-accept'),
     path('invitations/<int:id>/decline/', views.InvitationDeclineAPI.as_view(), name='invitation-decline'),
     path('matches/', views.MatchListAPI.as_view(), name='match-list'),
     path('matches/<int:id>/', views.MatchDetailAPI.as_view(), name='match-detail'),
     path('matches/<int:match_id>/games/<int:id>/', views.GameDetailAPI.as_view(), name='game-detail'),
+
+    path('winrate/', views.WinrateAPI.as_view(), name='player-winrate'),
 
     path('tournament/create/', views.TournamentCreateAPI.as_view(), name='tournament-create'),
     path('tournament/list/', views.TournamentOpenListAPI.as_view(), name='tournament-list'),

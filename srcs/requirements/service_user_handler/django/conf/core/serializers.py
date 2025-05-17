@@ -15,7 +15,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id', 'created_at', 'name', 'victory', 'defeat', 'avatar', 'online', 'last_seen', 'description']
+        fields = ['id', 'created_at', 'name', 'avatar', 'online', 'last_seen', 'description']
 
     def to_representation(self, instance):
         fields = super().to_representation(instance)
@@ -73,13 +73,13 @@ class FriendshipSerializer(serializers.ModelSerializer):
         fields = ['player_1_name', 'player_2_name', 'status', 'created_at']
 
 
-class BlockSerializer(serializers.ModelSerializer):
-    blocker_name = serializers.CharField(source='blocker.name')
-    blocked_name = serializers.CharField(source='blocked.name')
+class BlockListSerializer(serializers.ModelSerializer):
+    blocker = serializers.CharField(source='blocker.name', read_only=True)
+    blocked = serializers.CharField(source='blocked.name', read_only=True)
 
     class Meta:
         model = Block
-        fields = ['blocker_name', 'blocked_name', 'created_at']
+        fields = ['id', 'blocked', 'blocker','created_at']
 
 #===CRUD PLAYER====
 
@@ -254,10 +254,6 @@ class PlayerLoginSerializer(serializers.Serializer):
         user = authenticate(username=username, password=password)
         if user is None:
             raise serializers.ValidationError({"code": 1013}) # Nom ou mot de passe incorrect
-
-        player.online = True
-        player.last_seen = None
-        player.save()
 
         data['user'] = user
         data['player'] = player

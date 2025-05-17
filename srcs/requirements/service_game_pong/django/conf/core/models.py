@@ -53,11 +53,11 @@ class Game(models.Model):
     winner = models.ForeignKey(Player, on_delete=models.SET_NULL, related_name='won_games', null=True, blank=True)
     max_score = models.PositiveIntegerField(default=3 ,null=True, blank=True)
     # custom info
-    canvas_width = models.PositiveIntegerField(default=800)
-    canvas_height = models.PositiveIntegerField(default=400)
-    paddle_width = models.PositiveIntegerField(default=10)
-    paddle_height = models.PositiveIntegerField(default=80)
-    ball_radius = models.PositiveIntegerField(default=10)
+    canvas_width = models.PositiveIntegerField(default=70)
+    canvas_height = models.PositiveIntegerField(default=30)
+    paddle_width = models.PositiveIntegerField(default=1)
+    paddle_height = models.PositiveIntegerField(default=5)
+    ball_radius = models.PositiveIntegerField(default=1)
 
     def initialize_ball_direction(self):
         self.ball_dx = random.choice([1, -1])
@@ -66,3 +66,12 @@ class Game(models.Model):
 
     def __str__(self):
         return f"Game {self.id} (Round {self.round_number}) in Match {self.match.id if self.match else 'N/A'}"
+
+
+class Winrate(models.Model):
+    player = models.OneToOneField(Player, on_delete=models.CASCADE, related_name='winrate')
+    victory = models.PositiveIntegerField(default=0)
+    defeat = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.player.name} - {self.victory}W/{self.defeat}L"

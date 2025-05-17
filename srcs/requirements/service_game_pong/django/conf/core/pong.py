@@ -61,7 +61,7 @@ async def game_pong(game_id, consumer):
         # Calculer la nouvelle direction
         ball_dx = math.cos(bounce_angle_rad)
         ball_dy = -math.sin(bounce_angle_rad)
-        ball_speed += 5
+        ball_speed += 0.05
         
     elif (ball_x >= CANVAS_WIDTH - PADDLE_WIDTH - BALL_RADIUS and
           paddle_r_position <= ball_y <= paddle_r_position + PADDLE_HEIGHT):
@@ -77,11 +77,11 @@ async def game_pong(game_id, consumer):
         # Calculer la nouvelle direction
         ball_dx = -math.cos(bounce_angle_rad)
         ball_dy = -math.sin(bounce_angle_rad)
-        ball_speed += 5
+        ball_speed += 0.05
 
     # Balle sort du terrain (point marqué)
     if ball_x < 0 or ball_x > CANVAS_WIDTH:
-        ball_speed = 4
+        ball_speed = 0.2
         if ball_x > CANVAS_WIDTH:
             score_player_1 += 1
         elif ball_x < 0:
