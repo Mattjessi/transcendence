@@ -191,7 +191,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/users/admin/'
 LOGIN_URL = '/login'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'https://localhost:4343/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type

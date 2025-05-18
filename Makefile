@@ -53,6 +53,6 @@ fclean: clean
 		docker volume rm -f $(shell docker volume ls -q) > /dev/null; \
 	fi
 
-	@rm ./srcs/env/.env_vault_secrets_key
+	@rm -f ./srcs/env/.env_vault_secrets_key
 
 re: fclean all
