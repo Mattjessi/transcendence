@@ -30,6 +30,8 @@ services:
       context: ./requirements/frontend
       dockerfile: Dockerfile
     container_name: frontend
+    env_file:
+      - ./env/.env_nginx
     init: true
     restart: always
     networks:

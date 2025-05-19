@@ -5,7 +5,11 @@ import { useLocation } from "react-router-dom"
 
 export const AuthContext = createContext()
 
-localStorage.setItem("id", "localhost:4343")
+const domainName = process.env.REACT_APP_DOMAIN_NAME || 'localhost';
+const portNum = process.env.REACT_APP_PORT_NUM || '4343';
+const serverAddress = `${domainName}:${portNum}`;
+
+localStorage.setItem("id", serverAddress);
 
 export const AuthProvider = ({ children }) => {
 

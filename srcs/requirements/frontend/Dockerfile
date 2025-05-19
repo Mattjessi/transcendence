@@ -14,7 +14,8 @@ COPY --chown=root:root ./conf/public /home/frontend/public
 COPY --chown=root:root ./conf/src /home/frontend/src
 COPY --chown=root:root ./conf/vite.config.js /home/frontend/vite.config.js
 
-RUN npm install --prefix /home/frontend \
-	&& npm run build --prefix /home/frontend
+COPY --chown=root:root ./tools/init_react.sh /tmp/init_react.sh
+RUN chmod +x /tmp/init_react.sh
 
-CMD ["npx", "serve", "/home/frontend/dist"]
+
+CMD ["/tmp/init_react.sh"]
