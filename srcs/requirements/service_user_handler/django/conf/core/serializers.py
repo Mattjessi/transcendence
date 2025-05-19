@@ -9,7 +9,10 @@ from django.contrib.auth.hashers import check_password
 from core.validators import validate_strong_password
 from django.contrib.auth import authenticate
 from PIL import Image
-from io import BytesIO
+import re
+import qrcode
+import io
+import base64
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -526,10 +529,39 @@ class Enable2FASerializer(serializers.Serializer):
         return device
 
     def to_representation(self, instance):
+        original_url = instance.config_url
+        
+        # Récupérer le profil du joueur
+        player = self.context['request'].user.player_profile
+        
+        # Créer le nouveau libellé (seulement le nom du joueur précédé de "Transcendence: ")
+        custom_label = f"Transcendence: {player.name}"
+        
+        # Remplacer uniquement la partie player_X par le nouveau libellé
+        modified_url = re.sub(r'totp/([^?]+)', f'totp/{custom_label}', original_url)
+        
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(modified_url)
+        qr.make(fit=True)
+        
+        # Créer une image du QR code
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convertir l'image en base64
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        
         return {
             "code": 1000,
             "method": "TOTP",
-            "qr_code_url": instance.config_url
+            "qr_code_url": modified_url,
+            "qr_code_image": f"data:image/png;base64,{qr_code_image}"
         }
 
 class Disable2FASerializer(serializers.Serializer):
