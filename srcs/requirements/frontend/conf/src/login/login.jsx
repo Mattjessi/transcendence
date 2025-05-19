@@ -25,8 +25,6 @@ function Login() {
 	const sendAuth = async (e) => {
 		e.preventDefault()
 		try {
-			console.log('Environment:', process.env);
-			console.log('REACT_APP_DOMAIN_NAME:', process.env.REACT_APP_DOMAIN_NAME);
 			const response = await axiosInstance.post('/users/api/login/', {
 				username: username,
 				password: password})
