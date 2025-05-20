@@ -9,12 +9,14 @@ from django.contrib.auth.hashers import check_password
 from core.validators import validate_strong_password
 from django.contrib.auth import authenticate
 from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from social_django.utils import load_strategy
 import re
 import qrcode
 import io
 import base64
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django_otp.plugins.otp_totp.models import TOTPDevice
+import random
 
 class PlayerSerializer(serializers.ModelSerializer):
     two_factor_enabled = serializers.BooleanField(read_only=True)
@@ -587,4 +589,101 @@ class Disable2FASerializer(serializers.Serializer):
         return {
             "code": 1000,
             "message": "2FA désactivé"
+        }
+
+
+#===OAUTH====
+
+class Auth42RegisterSerializer(serializers.Serializer):
+    def validate(self, data):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            raise serializers.ValidationError({"code": 1030})  # Utilisateur déjà authentifié
+        return data
+
+    def create(self, validated_data):
+        request = self.context['request']
+        strategy = load_strategy(request)
+        backend = strategy.get_backend('forty_two')
+        
+        try:
+            user = backend.auth_complete(request=request)
+            if not user:
+                raise serializers.ValidationError({"code": 1051}) #Échec de l'authentification
+        except Exception as e:
+            raise serializers.ValidationError({"code": 1052, "message": f"Erreur OAuth: {str(e)}"})
+
+        social_user = user.social_user
+        data = {
+            'forty_two_id': social_user.uid,
+            'login': social_user.extra_data['login']
+        }
+
+        # Vérifier doublon forty_two_id
+        if Player.objects.filter(forty_two_id=data['forty_two_id']).exists():
+            raise serializers.ValidationError({"code": 1050}) #Un compte existe déjà avec cet identifiant 42
+
+        # Générer un nom unique
+        base_name = data['login']
+        name = base_name
+        counter = 1
+        while Player.objects.filter(name=name).exists():
+            name = f"{base_name}_42_{counter}"
+            counter += 1
+
+        # Stocker temporairement les données dans la session
+        request.session['oauth_42_data'] = {
+            'forty_two_id': data['forty_two_id'],
+            'name': name
+        }
+        return data
+
+    def to_representation(self, instance):
+        return {
+            "code": 1000,
+            "next_step": "choose_password",
+            "redirect_url": "api/auth-42/complete/"  # URL frontend pour le formulaire
+        }
+
+class Auth42CompleteSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True, required=True)
+    password2 = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        request = self.context['request']
+        oauth_data = request.session.get('oauth_42_data')
+        if not oauth_data:
+            raise serializers.ValidationError({"code": 1053}) #Session OAuth invalide ou expirée
+
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError({"code": 1001})  # Les mots de passe ne correspondent pas
+        validate_strong_password(data['password'])
+        return data
+
+    def create(self, validated_data):
+        request = self.context['request']
+        oauth_data = request.session.pop('oauth_42_data', None)
+        if not oauth_data:
+            raise serializers.ValidationError({"code": 1053}) #Session OAuth invalide ou expirée"
+
+        # Générer un username unique
+        name = f"42_{oauth_data['name']}"
+
+        # Créer l'utilisateur
+        user = User.objects.create_user(
+            username=f"temp_{uuid.uuid4().hex[:8]}",
+            password=validated_data['password']
+        )
+        player = Player.objects.create(
+            user=user,
+            name=name,
+            forty_two_id=oauth_data['forty_two_id']
+        )
+        user.username = f"42_player_{player.id}"
+        user.save()
+        return player
+
+    def to_representation(self, instance):
+        return {
+            "code": 1000,
         }
