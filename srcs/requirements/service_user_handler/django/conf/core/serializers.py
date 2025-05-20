@@ -138,31 +138,58 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
         fields = ['online', 'description', 'avatar']
 
     def validate(self, data):
+        # Vérification de l'utilisateur authentifié
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError({"code": 1030})
+            raise serializers.ValidationError({"code": 1030, "message": "User not authenticated"})
 
+        # Vérification que l'instance appartient à l'utilisateur
         instance = self.instance
         if instance != request.user.player_profile:
-            raise serializers.ValidationError({"code": 1031})
+            raise serializers.ValidationError({"code": 1031, "message": "Unauthorized to update this profile"})
 
+        # Validation de l'image
         avatar = data.get('avatar')
         if avatar:
+            # Vérification de l'extension
             allowed_extensions = ['jpg', 'jpeg', 'png']
-            if not avatar.name.lower().endswith(tuple(allowed_extensions)):
-                raise serializers.ValidationError({"code": 1032})
+            if not hasattr(avatar, 'name') or not avatar.name.lower().endswith(tuple(allowed_extensions)):
+                raise serializers.ValidationError({"code": 1032, "message": "Invalid file extension"})
 
-            max_weight = 2 * 1024 * 1024  # 2 Mo en octets
+            # Vérification du type MIME réel
+            img_type = imghdr.what(avatar)
+            if img_type not in ['jpeg', 'png']:
+                raise serializers.ValidationError({"code": 1032, "message": "File is not a valid image"})
+
+            # Vérification de la taille (2 Mo)
+            max_weight = 2 * 1024 * 1024
             if avatar.size > max_weight:
-                raise serializers.ValidationError({"code": 1033})
+                raise serializers.ValidationError({"code": 1033, "message": "Image size exceeds 2MB"})
 
             try:
+                # Vérifier l'intégrité de l'image
                 img = Image.open(avatar)
+                img.verify()  # Vérifie que c'est une image valide
+                avatar.seek(0)  # Réinitialiser le pointeur après verify
+                img = Image.open(avatar)  # Ré-ouvrir pour traitement
+
+                # Vérification des dimensions
                 max_dimensions = (500, 500)
                 if img.width > max_dimensions[0] or img.height > max_dimensions[1]:
-                    raise serializers.ValidationError({"code": 1034})
-            except Exception:
-                raise serializers.ValidationError({"code": 1035})
+                    raise serializers.ValidationError({"code": 1034, "message": "Image dimensions exceed 500x500"})
+
+                # Reconversion pour nettoyer l'image
+                output = BytesIO()
+                img_format = 'PNG' if img.format == 'PNG' else 'JPEG'
+                img.save(output, format=img_format, quality=85, optimize=True, exif=b'')  # Supprime les métadonnées
+                output.seek(0)
+
+                # Stocker l'image nettoyée dans les données validées
+                cleaned_filename = f"avatar.{img_format.lower()}"
+                data['avatar'] = ContentFile(output.read(), name=cleaned_filename)
+
+            except Exception as e:
+                raise serializers.ValidationError({"code": 1035, "message": f"Invalid image file: {str(e)}"})
 
         return data
 
@@ -170,20 +197,23 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
         description = validated_data.get('description')
         online = validated_data.get('online')
         avatar = validated_data.get('avatar')
+
+        # Mise à jour des champs
         if avatar is not None:
-            instance.avatar = avatar
+            instance.avatar = avatar  # Utiliser l'image nettoyée
         if description is not None:
             instance.description = description
         if online is not None:
             if online:
                 instance.online = True
                 instance.last_seen = None
-            elif online is False:
+            else:
                 instance.online = False
-                instance.last_seen = timezone.now()    
+                instance.last_seen = timezone.now()
+
         instance.save()
         return instance
-    
+
     def to_representation(self, instance):
         return {"code": 1000}
 
@@ -581,11 +611,14 @@ class Disable2FASerializer(serializers.Serializer):
         user = self.context['request'].user
         player = instance
         player.two_factor_enabled = False
-        TOTPDevice.objects.filter(user=user).delete()
+        device=TOTPDevice.objects.filter(user=user)
+        if device.exists():
+            device.delete()
         player.save()
         return player
 
     def to_representation(self, instance):
+        print('test')
         return {
             "code": 1000,
             "message": "2FA désactivé"
@@ -686,4 +719,5 @@ class Auth42CompleteSerializer(serializers.Serializer):
     def to_representation(self, instance):
         return {
             "code": 1000,
+            "name":instance.name,
         }

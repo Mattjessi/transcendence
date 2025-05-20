@@ -20,7 +20,7 @@ async def game_pong(game_id, consumer):
     score_player_1 = consumer.c_scorep1.get(consumer.match_id, 0)
     score_player_2 = consumer.c_scorep2.get(consumer.match_id, 0)
     
-    ball_speed = consumer.c_ball_speed.get(consumer.match_id, 0.2)
+    ball_speed = 0.2
 
     # Utiliser les dimensions dynamiques
     CANVAS_WIDTH = game.canvas_width
@@ -62,7 +62,6 @@ async def game_pong(game_id, consumer):
         # Calculer la nouvelle direction
         ball_dx = math.cos(bounce_angle_rad)
         ball_dy = -math.sin(bounce_angle_rad)
-        ball_speed *= 1.2
         
     elif (ball_x >= CANVAS_WIDTH - PADDLE_WIDTH - BALL_RADIUS and
           paddle_r_position <= ball_y <= paddle_r_position + PADDLE_HEIGHT):
@@ -79,7 +78,6 @@ async def game_pong(game_id, consumer):
         # Calculer la nouvelle direction
         ball_dx = -math.cos(bounce_angle_rad)
         ball_dy = -math.sin(bounce_angle_rad)
-        ball_speed *= 1.2
 
     # Balle sort du terrain (point marqué)
     if ball_x < 0 or ball_x > CANVAS_WIDTH:
@@ -99,8 +97,8 @@ async def game_pong(game_id, consumer):
             consumer.room_group_name,
             {
                 "type": "score_update",
-                "score_Player_1": score_player_1,
-                "score_Player_2": score_player_2,
+                "scorePlayer1": score_player_1,
+                "scorePlayer2": score_player_2,
             }
         )
 

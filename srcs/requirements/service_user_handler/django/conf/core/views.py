@@ -331,10 +331,12 @@ class Disable2FAView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
+        if isinstance(instance, Response):  # Gérer le cas où get_object retourne une Response
+            return instance
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.update(instance, serializer.validated_data)
-        return Response({"code": 1000}, status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.to_representation(instance), status=status.HTTP_200_OK)
 
 
 # ============OAUTH================
