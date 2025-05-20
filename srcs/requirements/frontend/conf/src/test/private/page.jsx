@@ -1,11 +1,16 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useGame } from "../../websockets/game"
 import createCanva from "./canva";
+import { updateSender } from "../../chat/string"
 
 const BGprivate = ({ state, type }) => {
 
 	const canva = useRef(null)
-	const { getSocket, PongMessages } = useGame()
+	const { getSocket, PongMessages, messages } = useGame()
+	const [groupName, setGroupName] = useState([])
+	const [player1, setPlayer1] = useState("")
+	const [player2, setPlayer2] = useState("")
+	const [groupScore, setGroupScore] = useState({score1: 0, score2: 0})
 
 	useEffect(() => {
 
@@ -16,8 +21,8 @@ const BGprivate = ({ state, type }) => {
 		const handleKeyDown = (e) => {
 			const socket = getSocket()
 			let action = ""
-			if (e.key == "ArrowUp") action = "move_up"
-			if (e.key == "ArrowDown") action = "move_down"
+			if (e.key == "ArrowUp") action = "move_down"
+			if (e.key == "ArrowDown") action = "move_up"
 			if (action && type && socket.readyState === WebSocket.OPEN) {
 				socket.send(JSON.stringify({ action: action, type: type}))
 			}
@@ -26,8 +31,8 @@ const BGprivate = ({ state, type }) => {
 		const handleKeyUp = (e) => {
 			const socket = getSocket()
 			let action = ""
-			if (e.key == "ArrowUp") action = "up"
-			if (e.key == "ArrowDown") action = "down"
+			if (e.key == "ArrowUp") action = "down"
+			if (e.key == "ArrowDown") action = "up"
 			if (action && type && socket.readyState === WebSocket.OPEN) {
 				socket.send(JSON.stringify({ action: "key_up", type: action}))
 			}
@@ -48,7 +53,7 @@ const BGprivate = ({ state, type }) => {
 
 		const lastPongMessage = PongMessages[PongMessages.length - 1]
 	
-		const { dispose, renderer, camera } = createCanva(canva.current, state, lastPongMessage)
+		const { dispose, renderer, camera } = createCanva(canva.current, state, lastPongMessage, groupScore, setGroupScore, groupName)
 
 		window.addEventListener("resize", resizeCanva)
 		window.addEventListener('keydown', handleKeyDown)
@@ -63,6 +68,16 @@ const BGprivate = ({ state, type }) => {
 			dispose()
 		}
 	}, [canva, state, PongMessages])
+
+	useEffect(() => {
+		if (!messages.length) return
+		const lastMessage = messages[messages.length - 1]
+		if (lastMessage.type == "match_created") {
+			setPlayer1(messages.player_1)
+			setPlayer2(messages.player_2)
+			setGroupName({player1: updateSender(player1), player2: updateSender(player2)})
+		}
+	}, [messages])
 
 	return (
 			<div className="position-fixed top-0">

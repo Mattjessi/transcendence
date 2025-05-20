@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Modal, Button } from "react-bootstrap"
-import axiosInstance from '../auth/instance'
 import { useAuth } from "../auth/context"
+import axiosInstance from "../auth/instance"
 
 function JoinMatch({ state, setState, setType }) {
 

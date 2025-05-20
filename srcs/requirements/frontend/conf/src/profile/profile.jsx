@@ -122,4 +122,3 @@ function Profile({ user, profile }) {
 }
 
 export default Profile
-

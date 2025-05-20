@@ -6,8 +6,8 @@ import InviteMatch from "./invite.jsx"
 import JoinMatch from "./join.jsx"
 import WaitMatch from "./wait.jsx"
 import PlayMatch from "./play.jsx"
-import axiosInstance from "../auth/instance.jsx"
 import { useNotification } from "../websockets/notification.jsx"
+import axiosInstance from "../auth/instance.jsx"
 
 function Online({ user }) {
 
@@ -17,7 +17,7 @@ function Online({ user }) {
 
 	const fonction = async () => {
 		try {
-			const matchData = await axiosInstance(`/pong/matches/?player_id=${user.id}`)
+			const matchData = await axiosInstance.get(`/pong/matches/?player_id=${user.id}`)
 			const inviteData = await axiosInstance.get("/pong/invitations/")
 			const a = matchData.data
 				.filter(match => match.status == "En cours" && (match.player_1.name == user.name || match.player_2.name == user.name))
@@ -43,12 +43,13 @@ function Online({ user }) {
 	}
 
 	useEffect(() => {
-		fonction()
-	}, [])
+		if (state != "play")
+			fonction()
+	}, [state])
 
 	return (
 		<>
-			<Header user={ user } state={ state }/>
+			<Header user={ user } state={ state } setState={ setState }/>
 			<main>
 				<BGprivate state={ state } type={ type }/>
 				{state == "" || state == "invite" || state == "join" ?
@@ -59,6 +60,7 @@ function Online({ user }) {
 						<div className="d-flex flex-column gap-3">
 							<Button type="button" className="btn btn-secondary rounded fw-bolder" onClick={() => setState("invite")}>Invite</Button>
 							<Button type="button" className="btn btn-secondary rounded fw-bolder" onClick={() => setState("join")}>Join</Button>
+							<Button type="button" className="btn btn-secondary rounded fw-bolder" onClick={() => setState("play")}>Play</Button>
 						</div>
 					</div>
 				</div> : <></>}

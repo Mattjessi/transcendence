@@ -14,8 +14,7 @@ export const Chat = ({ children }) => {
 	useEffect(() => {
 		if (!isAuth) return
 		const Atoken = localStorage.getItem('Atoken')
-		const id = localStorage.getItem("id")
-		const ws = new WebSocket(`wss://${id}/live_chat/ws/chat/general/?token=${Atoken}`)
+		const ws = new WebSocket(`wss://${location.host}/live_chat/ws/chat/general/?token=${Atoken}`)
 		socketRef.current = ws
 
 		ws.onopen = () => {

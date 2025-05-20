@@ -5,11 +5,9 @@ import { useLocation } from "react-router-dom"
 
 export const AuthContext = createContext()
 
-const domainName = import.meta.env.VITE_DOMAIN_NAME || 'localhost';
-const portNum = import.meta.env.VITE_PORT_NUM || '4343';
-const serverAddress = `${domainName}:${portNum}`;
-
-localStorage.setItem("id", serverAddress);
+/*const domainName = import.meta.env.VITE_DOMAIN_NAME || 'localhost'
+const portNum = import.meta.env.VITE_PORT_NUM || '4343'
+const serverAddress = `${domainName}:${portNum}`*/
 
 export const AuthProvider = ({ children }) => {
 

@@ -1,15 +1,13 @@
 import axios from 'axios'
 import { removeData } from './data.js'
 
-const id = localStorage.getItem('id')
-
 const axiosInstance = axios.create({
-	baseURL: `https://${id}`,
+	baseURL: `https://${location.host}`,
 	withCredentials: true,
 })
 
 const rawAxios = axios.create({
-	baseURL: `https://${id}`,
+	baseURL: `https://${location.host}`,
 	withCredentials: true,
 })
 
@@ -46,7 +44,8 @@ axiosInstance.interceptors.request.use(async (config) => {
 
 	let Atoken = localStorage.getItem('Atoken')
 	const Rtoken = localStorage.getItem('Rtoken')
-	const isAuthAPI = config.url && config.url.includes("/users/api/login/")
+	const isAuthAPI = config.url && (config.url.includes("/users/api/login/") ||
+		config.url.includes("/users/api/register/"))
 
 	if (isAuthAPI)
 		return config
@@ -55,33 +54,23 @@ axiosInstance.interceptors.request.use(async (config) => {
 		return config
 	}
 
-	const isRtokenExpired = (() => {
-		if (!Rtoken || !Rtoken.includes('.')) return true
+	const istokenExpired = ((token) => {
+		if (!token || !token.includes('.')) return true
 		try {
-			const payload = JSON.parse(atob(Rtoken.split('.')[1]))
+			const payload = JSON.parse(atob(token.split('.')[1]))
 			const expiry = payload.exp * 1000
 			return Date.now() >= expiry
 		}
 		catch {return true}
-	})()
+	})
 
-	if (isRtokenExpired) {
+	if (istokenExpired(Rtoken)) {
 		removeData()
 		window.location.reload()
 		return config
 	}
 
-	const isAtokenExpired = (() => {
-		if (!Atoken || !Atoken.includes('.')) return true
-		try {
-			const payload = JSON.parse(atob(Atoken.split('.')[1]))
-			const expiry = payload.exp * 1000
-			return Date.now() >= expiry
-		}
-		catch {return true}
-	})()
-
-	if (isAtokenExpired) {
+	if (istokenExpired(Atoken)) {
 		console.log("Access token expired, attempting refresh.")
 		const success = await refreshAtoken(Rtoken)
 		if (!success) {
