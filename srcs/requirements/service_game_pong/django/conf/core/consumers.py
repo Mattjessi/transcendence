@@ -197,7 +197,7 @@ class PongConsumer(AsyncWebsocketConsumer):
             }
             self.game.ball_dx = self.c_balldx.get(self.match_id, 0)
             self.game.ball_dy = self.c_balldy.get(self.match_id, 0)
-            self.game.ball_speed = self.c_ball_speed.get(self.match_id, 4)
+            self.game.ball_speed = self.c_ball_speed.get(self.match_id, 0.2)
             self.game.score_player_1 = self.c_scorep1.get(self.match_id, 0)
             self.game.score_player_2 = self.c_scorep2.get(self.match_id, 0)
             self.game.status = self.c_status.get(self.match_id, StatusChoices.EN_COURS)
@@ -595,6 +595,14 @@ class PongConsumer(AsyncWebsocketConsumer):
             "scorePlayer2": event["scorePlayer2"],
         }))
 
+    async def score_update(self, event):
+        """Informe les clients que le score est mise a jour."""
+        await self.send(text_data=json.dumps({
+            "type": "score_update",
+            "scorePlayer1": event["score_Player_1"],
+            "scorePlayer2":event["score_Player_2"],
+        }))
+		
     async def game_paused(self, event):
         """Informe les clients que le jeu est en pause."""
         await self.send(text_data=json.dumps({
@@ -772,7 +780,7 @@ class PongConsumer(AsyncWebsocketConsumer):
     async def process_paddle_movements(self):
         """Traite les mouvements des raquettes en fonction de l'état des touches."""
         last_time = time.time()
-        paddle_speed = 0.5  # Vitesse de déplacement en pixels
+        paddle_speed = 0.2  # Vitesse de déplacement en pixels
         
         while self.running:
             current_time = time.time()
