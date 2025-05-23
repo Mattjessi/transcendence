@@ -20,7 +20,9 @@ def get_vault_secrets():
             'postgres_host',
             'postgres_port',
             'postgres_user',
-            'postgres_database_name'
+            'postgres_database_name',
+            'auth_42_key',
+            'auth_42_secret'
         ]
 
         secrets = {}

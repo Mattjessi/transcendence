@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { useAuth } from "../auth/context"
 import axiosInstance from '../auth/instance'
 
-function BlockModal({ tab }) {
+function BlockModal({ tab, handleClose }) {
 
 	const { user } = useAuth()
 	const [data, setData] = useState([])
@@ -13,30 +13,31 @@ function BlockModal({ tab }) {
 		try {
 			const playerData = await axiosInstance.get('/users/api/player/')
 			const blockData = await axiosInstance.get('/users/api/block/list/')
-			let temp
 
 			const getID = (name) => {
 				const ID = blockData.data.find(block => block.blocked === name && block.blocker === user.name)
 				return ID.id
 			}
 
-			const blocked = blockData.data.filter(block => block.blocker == user.name)
-
-			temp = playerData.data
-				.filter(player => blocked.some(block => block.blocked == player.name))
+			const a = playerData.data
+				.filter(player => blockData.data.some(block => block.blocked == player.name && block.blocker == user.name))
 				.map(player => ({name: player.name, id: getID(player.name), avatar: player.avatar}))
-
-			setData(temp)
-			setFilteredFriends(temp)
+			
+			setData(a)
+			setFilteredFriends(a)
 		}
 		catch(error) {
 			console.log(error)
+			handleClose()
 		}
 	}
 
 	const removeBlock = async (playerID) => {
 		try {await axiosInstance.delete(`/users/api/block/remove/${playerID}/`)}
-		catch(error) {console.log(error)}
+		catch(error) {
+			console.log(error)
+			handleClose()
+		}
 		finally {list()}
 	}
 

@@ -118,51 +118,64 @@ export const setBall = () => {
 }
 
 export const setScore = (groupScore) => {
-	if (!groupScore.length) return
 	const canvas = document.createElement('canvas')
 	canvas.width = 512
 	canvas.height = 512
 	const ctx = canvas.getContext('2d')
 	ctx.translate(0, canvas.height)
     ctx.scale(1, -1)
-	ctx.font = 'bold 40px Arial'
+	ctx.font = 'bold 40px "Courier New", monospace'
 	ctx.fillStyle = 'white'
 	ctx.textAlign = 'center'
 	ctx.textBaseline = 'middle'
-	ctx.fillText(`${groupScore.score1} - ${groupScore.score2}`, canvas.width / 2, canvas.height / 2)
+	const s1 = (groupScore && groupScore.score1 != undefined ? `${groupScore.score1}` : "0")
+	const s2 = (groupScore && groupScore.score2 != undefined ? `${groupScore.score2}` : "0")
+	const text = `${s1} - ${s2}`
+	ctx.fillText(text, canvas.width / 2, canvas.height / 2)
 	const texture = new THREE.Texture(canvas)
 	texture.flipY = false
 	texture.premultiplyAlpha = false
 	texture.needsUpdate = true
 	const material = new THREE.MeshBasicMaterial({
 		map: texture, transparent: true, side: THREE.DoubleSide})
-	const geometry = new THREE.PlaneGeometry(80, 80)
+	const geometry = new THREE.PlaneGeometry(50, 50)
 	const textMesh = new THREE.Mesh(geometry, material)
-	textMesh.position.set(35, 30, 6)
+	textMesh.position.set(35, 30, 7)
 	textMesh.rotateX(Math.PI / 2)
 	return (textMesh)
 }
 
+export const updateScore = (newScore, scene, objects) => {
+	const newScoreMesh = setScore(newScore)
+	objects.score.geometry.dispose()
+	objects.score.material.dispose()
+	scene.remove(objects.score)
+	scene.add(newScoreMesh)
+	objects.score = newScoreMesh
+}
+
 export const setNames = (groupName) => {
-	if (!groupName.length) return
 	const canvas = document.createElement('canvas')
 	canvas.width = 512
 	canvas.height = 512
 	const ctx = canvas.getContext('2d')
 	ctx.translate(0, canvas.height)
     ctx.scale(1, -1)
-	ctx.font = 'bold 40px Arial'
+	ctx.font = 'bold 20px "Courier New", monospace'
 	ctx.fillStyle = 'white'
 	ctx.textAlign = 'center'
 	ctx.textBaseline = 'middle'
-	ctx.fillText(`${groupName.player1}   vs   ${groupName.player2}`, canvas.width / 2, canvas.height / 2)
+	const text = (groupName && groupName.player1 && groupName.player2
+		? `${groupName.player1} vs ${groupName.player2}`
+		: "...   vs   ...")
+	ctx.fillText(text, canvas.width / 2, canvas.height / 2)
 	const texture = new THREE.Texture(canvas)
 	texture.flipY = false
 	texture.premultiplyAlpha = false
 	texture.needsUpdate = true
 	const material = new THREE.MeshBasicMaterial({
 		map: texture, transparent: true, side: THREE.DoubleSide})
-	const geometry = new THREE.PlaneGeometry(25, 25)
+	const geometry = new THREE.PlaneGeometry(50, 50)
 	const textMesh = new THREE.Mesh(geometry, material)
 	textMesh.position.set(35, 30, 14)
 	textMesh.rotateX(Math.PI / 2)

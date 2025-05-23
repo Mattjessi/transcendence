@@ -1,29 +1,29 @@
 import * as THREE from 'three'
-import { setFloor, setFog, setLine, setBorder, setBScreen, setLight, setPaddle, setWall, setBall, setScore, setNames } from './shapes'
+import { setFloor, setFog, setLine, setBorder, setBScreen, setLight, setPaddle, setWall, setBall, setScore, setNames, updateScore } from './shapes'
 
-const setAll = (scene, state, groupScore, groupName) => {
+const setAll = (scene, state, groupName, groupScore) => {
 
 	const floor = setFloor(scene)
 	const fog = setFog(scene)
-	const line = setLine()
+	//const line = setLine()
 	const border = setBorder()
 	const bscreen = setBScreen()
 	const light = setLight(scene)
 	const paddle = setPaddle()
 	const wall = setWall()
 	const ball = setBall()
-	const score = setScore(groupScore)
 	const names = setNames(groupName)
+	const score = setScore(groupScore)
 
 	if (state == "play") {
-		line.cubes.forEach(cube => scene.add(cube))
+		//line.cubes.forEach(cube => scene.add(cube))
 		scene.add(paddle.paddleL, paddle.paddleR, wall.wallL, wall.wallR, ball, names)
 		scene.add(border, bscreen.bscreen1, bscreen.bscreen2, bscreen.bscreen3, score)
 	}
 	return {floor, fog, light, paddle, wall, ball, border, bscreen, names, score}
 }
 
-const createCanva = (canva, state, lastPongMessage, groupScore, setGroupScore, groupName) => {
+const createCanva = (canva, state, lastPongMessage, groupName, groupScore, setGroupScore, ScoreMessages) => {
 	
 	const scene = new THREE.Scene()
 
@@ -38,22 +38,21 @@ const createCanva = (canva, state, lastPongMessage, groupScore, setGroupScore, g
 	renderer.toneMappingExposure = 2.0
 	renderer.setSize(canva.width, canva.height)
 
-	const objects = setAll(scene, state, groupScore, groupName)
+	const objects = setAll(scene, state, groupName, groupScore)
 
 	let animationFrameId
 
 	const animate = () => {
 		if (state == "play") {
-			//console.log(lastPongMessage)
-			if (lastPongMessage && (lastPongMessage.scorePlayer1 != groupScore.score1 ||
-				lastPongMessage.scorePlayer2 != groupScore.score2)) {
-				setGroupScore({score1: lastPongMessage.scorePlayer1, score2: lastPongMessage.scorePlayer2})
-				objects.score.geometry.dispose()
-				objects.score.material.dispose()
-				scene.remove(objects.score)
-				objects.score = setNames(groupName)
-				scene.add(objects.score)
+			if (groupScore && ScoreMessages && ScoreMessages.scorePlayer1 != undefined && ScoreMessages.scorePlayer2 != undefined &&
+				(ScoreMessages.scorePlayer1 != groupScore.score1 || ScoreMessages.scorePlayer2 != groupScore.score2)) {
+				updateScore({score1: ScoreMessages.scorePlayer1 != undefined ? ScoreMessages.scorePlayer1 : 0,
+							score2: ScoreMessages.scorePlayer2 != undefined ? ScoreMessages.scorePlayer2 : 0},
+							scene, objects)
+				setGroupScore({score1: ScoreMessages.scorePlayer1 != undefined ? ScoreMessages.scorePlayer1 : 0,
+							score2: ScoreMessages.scorePlayer2 != undefined ? ScoreMessages.scorePlayer2 : 0})
 			}
+		
 			objects.paddle.paddleL.position.set(0.5, lastPongMessage ? (lastPongMessage.paddleL + 2.5) : 17.5, 1)
 			objects.paddle.paddleR.position.set(70.5, lastPongMessage ? (lastPongMessage.paddleR + 2.5) : 17.5, 1)
 			objects.ball.position.set(lastPongMessage ? (lastPongMessage.x + 0.5) : 35.5, lastPongMessage ? (lastPongMessage.y + 0.5) : 15.5, 1)
@@ -104,7 +103,7 @@ const createCanva = (canva, state, lastPongMessage, groupScore, setGroupScore, g
 			if (objects.paddle.paddleR) {
 				objects.paddle.paddleR.geometry.dispose()
 				objects.paddle.paddleR.material.dispose()
-				scene.remove(objects.paddle.paddleL)
+				scene.remove(objects.paddle.paddleR)
 			}
 		}
 		if (objects.wall) {

@@ -10,13 +10,13 @@ function WaitMatch({ setState }) {
 	const { user } = useAuth()
 	const [friendName, setFriendName] = useState("")
 	const [friend, setFriend] = useState(null)
-	const { messages, setMessages } = useNotification()
+	const { NotifMessages, setNotifMessages } = useNotification()
 	const { setUrl } = useGame()
 	const [ready, setReady] = useState(false)
 
 	const play = () => {
-		setUrl(messages.ws_url)
-		setMessages([])
+		setUrl(NotifMessages.ws_url)
+		setNotifMessages([])
 		setState("play")
 	}
 
@@ -51,12 +51,13 @@ function WaitMatch({ setState }) {
 	}, [friendName])
 
 	useEffect(() => {
-		if (messages.type == "match_created") setFriendName(user.name == messages.player_1 ? messages.player_2 : messages.player_1)
-		if (messages.type == "invitation_declined") {
+		if (NotifMessages.type == "match_created")
+			setFriendName(user.name == NotifMessages.player_1 ? NotifMessages.player_2 : NotifMessages.player_1)
+		if (NotifMessages.type == "invitation_declined") {
 			setState("")
-			setMessages([])
+			setNotifMessages([])
 		}
-	}, [messages])
+	}, [NotifMessages])
 
 	return (
 		<div className="position-absolute top-0 d-flex justify-content-center align-items-center vh-100 w-100">

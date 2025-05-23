@@ -4,27 +4,50 @@ import Header from "../global/header"
 import BGprivate from "../test/private/page.jsx"
 import JoinMatch from "./join.jsx"
 import WaitMatch from "./wait.jsx"
+import PlayMatch from "./play.jsx"
 import { useNotification } from "../websockets/notification.jsx"
 import axiosInstance from "../auth/instance.jsx"
+import WaitFinal from "./waitFinal.jsx"
 
 function Tournament({ user }) {
 
 	const [state, setState] = useState("")
 	const [type, setType] = useState("")
-	const { setMessages } = useNotification()
+	const { setNotifMessages } = useNotification()
 
 	const fonction = async () => {
 		try {
-			const tournamentData = await axiosInstance("/pong/tournament/list/")
+			const tournamentData = await axiosInstance.get("/pong/tournament/list/")
+			const url = await axiosInstance.get("/pong/matches/get-id/")
+			const idData = await axiosInstance.get("/pong/tournament/get-id/")
+			console.log("tournament: ", tournamentData)
+			console.log("idData: ", idData)
+			console.log("url: ", url)
 			const a = tournamentData.data
 				.find(match => match.status == "Ouvert" &&
 				(match.player_1 == user.id || match.player_2 == user.id ||
 				match.player_3 == user.id || match.player_4 == user.id))
 			if (a) {
-				if (a.player_1 == user.id) setType("host")
-				else setType("invited")
 				setState("wait")
-				setMessages({type: "tournament_created"})
+				setNotifMessages({type: "tournament_created"})
+			}
+			else if (url && url.ws_url != null) {
+				if (idData && idData.finalist1 == user.name || idData.finalist2 == user.name) {
+					setState("waitfinal")
+					setNotifMessages({
+						type: "match_created",
+						player_1: url.player_1,
+						player_2: url.player_2,
+						ws_url: url.ws_url})
+				}
+				else {
+					setState("wait")
+					setNotifMessages({
+						type: "match_created",
+						player_1: url.player_1,
+						player_2: url.player_2,
+						ws_url: url.ws_url})
+				}
 			}
 		}
 		catch(error) {
@@ -39,8 +62,7 @@ function Tournament({ user }) {
 				max_score_per_round: 3,
 				number_of_rounds: 1,
 			})
-			setMessages({type: "tournament_created"})
-			setType("host")
+			setNotifMessages({type: "tournament_created"})
 			setState("wait")
 		}
 		catch(error) {console.log(error)}
@@ -70,13 +92,13 @@ function Tournament({ user }) {
 				<JoinMatch state={ state } setState={ setState } setType={ setType }/>
 				{state == "wait" ?
 				<WaitMatch setState={ setState } type={ type } setType={ setType }/> : <></>}
+				{state == "play" ?
+				<PlayMatch setState={ setState }/> : <></>}
+				{state == "waitfinal" ?
+				<WaitFinal setState={ setState } type={ type } setType={ setType }/> : <></>}
 			</main>
 		</>
 	)
 }
 
 export default Tournament
-
-
-				/*{state == "play" ?
-				<PlayMatch/> : <></>}*/

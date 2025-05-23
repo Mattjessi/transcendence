@@ -38,12 +38,14 @@ function WinnerModal({ winnerName, show, onClose }) {
 
 function PlayMatch() {
 
-	const { getSocket, messages } = useGame()
+	const { getSocket, closeSocket, messages } = useGame()
+	const { setMessages, setPongMessages, setScoreMessages } = useGame()
 	const [paused, setPaused] = useState(false)
 	const [end, setEnd] = useState(false)
 	const closeEnd = () => setEnd(false)
 	const [winner, setWinner] = useState("")
 	const [timer, setTimer] = useState(60)
+	const [showTimer, setShowTimer] = useState(true)
 	const socket = getSocket()
 
 	useEffect(() => {
@@ -51,24 +53,39 @@ function PlayMatch() {
 		const lastMessage = messages[messages.length - 1]
 		console.log(lastMessage)
 		if (lastMessage.type == "match_ended") {
-			socket.close()
+			closeSocket()
 			setWinner(lastMessage.winner)
 			setPaused(false)
 			setEnd(true)
+			setMessages([])
+			setPongMessages([])
+			setScoreMessages([])
 		}
-		if (lastMessage.type == "game_paused") {
+		if (lastMessage.type == "game_paused")
 			setPaused(true)
+		if (lastMessage.type == "player_count" && lastMessage.player_count == 1) {
+			setPaused(true)
+			setShowTimer(false)
 		}
 		if (lastMessage.type == "forfeit_not_available") {
 			setTimer(lastMessage.remaining_seconds)
 		}
+		if (lastMessage.type == "forfeit_success") {
+			setWinner(user.name)
+			setPaused(false)
+			setEnd(true)
+			setMessages([])
+			setPongMessages([])
+			setScoreMessages([])
+		}
 		if (lastMessage.type == "player_count" && lastMessage.player_count == 2) {
 			setPaused(false)
+			setShowTimer(true)
 		}
 	}, [messages])
 
 	useEffect(() => {
-		if (paused == false || !socket || socket.readyState != WebSocket.OPEN) return
+		if (paused == false || showTimer == false || !socket || socket.readyState != WebSocket.OPEN) return
 
 		const interval = setInterval(() => {
 			socket.send(JSON.stringify({ action: "declare_win" }))
@@ -88,10 +105,10 @@ function PlayMatch() {
 		<>
 		{paused ? 
 		<div className="position-absolute top-0 d-flex flex-column justify-content-center align-items-center vh-100 w-100">
-  			<div className="fs-2 text-white mb-4">
-				Timer : {timer}s
+  			<i className="bi bi-pause-circle" style={{ fontSize: "20rem", color: "white" }} />
+			<div className="fs-1 mb-5">
+				{showTimer ? `Timer : ${timer}s` : ""}
 			</div>
-  			<i className="bi bi-pause-circle" style={{ fontSize: "10rem", color: "white" }} />
 		</div> : <></> }
 		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd }/>
 		</>

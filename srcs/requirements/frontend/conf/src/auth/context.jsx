@@ -5,10 +5,6 @@ import { useLocation } from "react-router-dom"
 
 export const AuthContext = createContext()
 
-/*const domainName = import.meta.env.VITE_DOMAIN_NAME || 'localhost'
-const portNum = import.meta.env.VITE_PORT_NUM || '4343'
-const serverAddress = `${domainName}:${portNum}`*/
-
 export const AuthProvider = ({ children }) => {
 
 	const [user, setUser] = useState(null)
@@ -44,6 +40,10 @@ export const AuthProvider = ({ children }) => {
 				logout()
 				return
 			}
+			if 	(location.pathname.includes("/users/api/login/", "/users/api/register/",
+				"/users/api/auth-42/register/", "/users/api/auth-42/callback/?code=",
+				"/users/api/auth-42/status/", "/users/api/auth-42/complete/"))
+				return
 			setIsAuth(auth)
 			await refreshData()
 			const updatedUser = await getData()

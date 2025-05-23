@@ -232,6 +232,37 @@ class TournamentLeaveAPI(generics.UpdateAPIView):
         return super().get_object()
 
 @method_decorator(csrf_exempt, name='dispatch')
+class TournamentGetIdAPI(generics.GenericAPIView):
+    """
+    Récupère l'ID d'un tournoi.
+    - GET /pong/tournaments/get-id/ : Retourne l'ID du tournoi.
+    """
+    serializer_class = serializers.TournamentGetIdSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.to_representation(serializer.validated_data))
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TournamentSeeFinalistsAPI(generics.GenericAPIView):
+    """
+    Récupère les finalistes d’un tournoi en cours.
+    - GET /pong/tournaments/<id>/finalists/ : Retourne les deux finalistes du tournoi spécifié.
+    """
+    serializer_class = serializers.TournamentSeeFinalSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    queryset = Tournament.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        tournament = self.get_object()
+        serializer = self.get_serializer(instance=tournament, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.to_representation(tournament))
+
+@method_decorator(csrf_exempt, name='dispatch')
 class TournamentCancelAPI(generics.DestroyAPIView):
     """
     Permet au créateur du tournoi (player_1) d'annuler un tournoi.
@@ -294,5 +325,16 @@ class TournamentCancelAPI(generics.DestroyAPIView):
         })
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class MatchGetCurrentAPI(generics.GenericAPIView):
+    """
+    Récupère l'ID d'un tournoi.
+    - GET /pong/match/get-id/ : Retourne l'ID du tournoi.
+    """
+    serializer_class = serializers.MatchGetCurrentSerializer
+    permission_classes = [IsAuthenticated]
 
-
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.to_representation(serializer.validated_data))
