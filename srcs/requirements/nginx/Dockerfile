@@ -42,7 +42,7 @@ RUN git clone https://github.com/owasp-modsecurity/ModSecurity.git \
 	&& cd /usr/local/coreruleset \
 	&& cp crs-setup.conf.example crs-setup.conf \
 	&& cd /etc/nginx/modsec \
-	&& sed -i "s/SecAuditEngine RelevantOnly/SecAuditEngine off/" modsecurity.conf
+	&& sed -i "s/SecAuditEngine RelevantOnly/SecAuditEngine on/" modsecurity.conf
 
 WORKDIR /etc/nginx/modsec
 COPY --chown=root:root ./conf/main.conf ./main.conf

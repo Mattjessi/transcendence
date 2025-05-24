@@ -57,5 +57,6 @@ urlpatterns = [
     #OAUTH
     path('api/auth-42/register/', views.Auth42RegisterView.as_view(), name='auth_42_register'),
     path('api/auth-42/callback/', views.Auth42CallbackView.as_view(), name='auth_42_callback'),
+	path('register/42/complete', views.register_complete_clean, name='register_complete_clean'),
     path('api/auth-42/complete/', views.Auth42CompleteView.as_view(), name='auth_42_complete'),
 ]

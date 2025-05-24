@@ -30,7 +30,7 @@ services:
       context: ./requirements/frontend
       dockerfile: Dockerfile
       args:
-        VITE_DOMAIN_NAME: 'c3r2p3'
+        VITE_DOMAIN_NAME: 'c4r2p6'
         VITE_PORT_NUM: 4343
     container_name: frontend
     init: true
