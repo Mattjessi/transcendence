@@ -1,39 +1,47 @@
 import hvac
 
 def get_vault_secrets():
-    try:
+    vault_token_path = './live_chat_django/live_chat_django'
+    vault_url = 'http://vault:8200'
 
-        # Extraction du token
-        with open('./live_chat_django/live_chat_django', 'r') as file:
-            vault_token = file.read().strip()
+    keys = [
+        'domain_name',
+        'django_secret_key',
+        'postgres_password',
+        'postgres_host',
+        'postgres_port',
+        'postgres_user',
+        'postgres_database_name',
+        'django_super_user_name',
+        'django_super_user_password',
+        'django_super_user_email'
+    ]
 
-        # Initialisation du client Vault
-        client = hvac.Client(url='http://vault:8200', token=vault_token)
+    while True:
+        try:
+            print("Tentative de récupération des secrets Vault...")
 
-        if not client.is_authenticated():
-            raise Exception("Authentification échouée avec Vault")
-        
-        keys = [
-            'domain_name',
-            'django_secret_key',
-            'postgres_password',
-            'postgres_host',
-            'postgres_port',
-            'postgres_user',
-            'postgres_database_name',
-            'django_super_user_name',
-            'django_super_user_password',
-            'django_super_user_email'
-        ]
+            # Lire le token Vault
+            with open(vault_token_path, 'r') as file:
+                vault_token = file.read().strip()
 
-        secrets = {}
+            # Créer le client Vault
+            client = hvac.Client(url=vault_url, token=vault_token)
 
-        # Récupération des secrets depuis Vault et extraction des valeurs spécifiques
-        for key in keys:
-            response = client.secrets.kv.v1.read_secret(path=f'live_chat/django/{key}')
-            secrets[key] = response['data'].get(key)
-        
-        return secrets
-    except Exception as e:
-        print(f"Erreur lors de la récupération des secrets Vault : {e}")
-        return None
+            if not client.is_authenticated():
+                raise Exception("Authentification échouée avec Vault")
+
+            secrets = {}
+
+            # Récupérer chaque secret
+            for key in keys:
+                response = client.secrets.kv.v1.read_secret(path=f'live_chat/django/{key}')
+                secrets[key] = response['data'].get(key)
+                if secrets[key] is None:
+                    raise Exception(f"Clé '{key}' absente ou vide dans Vault")
+
+            print("Secrets récupérés avec succès.")
+            return secrets
+
+        except Exception as e:
+            print(f"Erreur : {e} — nouvelle tentative immédiatement.")

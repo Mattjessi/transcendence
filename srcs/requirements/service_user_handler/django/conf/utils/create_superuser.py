@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.contrib.auth import get_user_model
 
 # Extraction du token
-with open('./user_handler_django/user_handler_django', 'r') as file:
+with open('/django_web_app/user_handler_django/user_handler_django', 'r') as file:
     vault_token = file.read().strip()
 
 # Initialisation du client Vault
