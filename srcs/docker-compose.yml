@@ -50,8 +50,7 @@ services:
     container_name: service_user_handler_django
     environment:
       - DJANGO_SETTINGS_MODULE=django_user_handler.settings
-    env_file:
-      - ./env/.env_nginx
+    env_file: ./env/.env_nginx
     init: true
     restart: always
     networks:
@@ -88,8 +87,7 @@ services:
     container_name: service_game_pong_django
     environment:
       - DJANGO_SETTINGS_MODULE=django_game_pong.settings
-    env_file:
-      - ./env/.env_nginx
+    env_file: ./env/.env_nginx
     init: true
     restart: always
     networks:
@@ -125,8 +123,7 @@ services:
     container_name: service_live_chat_django
     environment:
       - DJANGO_SETTINGS_MODULE=django_live_chat.settings
-    env_file:
-      - ./env/.env_nginx
+    env_file: ./env/.env_nginx
     init: true
     restart: always
     networks:
