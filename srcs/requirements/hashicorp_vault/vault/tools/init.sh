@@ -3,7 +3,7 @@
 
 #Check if vault_secrets container is up
 
-until [ "docker inspect vault_secrets | jq -r '.[0].State.Running'" != "true" ] > /dev/null; do
+until [ "$(docker inspect vault_secrets | jq -r '.[0].State.Running')" = "true" ] > /dev/null; do
 	sleep 1
 done
 

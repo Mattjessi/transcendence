@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "4343:443"
+      - "8080:80"
     container_name: nginx
     env_file: ./env/.env_nginx
     init: true
