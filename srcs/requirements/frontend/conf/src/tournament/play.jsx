@@ -66,12 +66,31 @@ function PlayMatch({ setState }) {
 	useEffect(() => {
 		if (!messages.length) return
 		const lastMessage = messages[messages.length - 1]
-		console.log(lastMessage)
+
+		const startFinal = async () => {
+			try {
+				let final
+				const idData = await axiosInstance.get("/pong/tournament/get-id/")
+				if (idData && idData.data.finalist1 != null && idData.data.finalist2 != null) {
+					final = await axiosInstance.put(`/pong/tournament/${idData.data.tournament_id}/start-final/`)
+					await axiosInstance.post("/live_chat/general/send/", {content: `It's time for final : ${idData.data.finalist1} vs ${idData.data.finalist2}`})
+				}
+			}
+			catch {}
+		}
 
 		const handleMessage = async () => {
-			if (lastMessage.type == "match_ended") {
+			if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
 				closeSocket()
-				setWinner(lastMessage.winner)
+				if (lastMessage.type == "match_ended") {
+					setWinner(lastMessage.winner)
+					if (lastMessage.winner == user.name)
+						await startFinal()
+				}
+				else {
+					setWinner(user.name)
+					await startFinal()
+				}
 				setPaused(false)
 				setEnd(true)
 				setMessages([])
@@ -89,27 +108,26 @@ function PlayMatch({ setState }) {
 			if (lastMessage.type == "player_count" && lastMessage.player_count == 2) {
 				setPaused(false)
 				setShowTimer(true)
+				setTimer(60)
 			}
 		}
 		handleMessage()
 	}, [messages])
 
 	useEffect(() => {
-		if (paused == false || showTimer == false || !socket || socket.readyState != WebSocket.OPEN) return
-
+	if (paused === false || showTimer === false || !socket || socket.readyState !== WebSocket.OPEN) return;
 		const interval = setInterval(() => {
-			socket.send(JSON.stringify({ action: "declare_win" }))
+			setTimer((prevTimer) => {
+				if (prevTimer <= 1) {
+					socket.send(JSON.stringify({ action: "declare_win" }))
+					clearInterval(interval)
+					return 0
+				}
+				return prevTimer - 1
+			})
 		}, 1000)
-
-		const timeout = setTimeout(() => {
-			clearInterval(interval)
-		}, 90000)
-
-		return () => {
-			clearInterval(interval)
-			clearTimeout(timeout)
-		}
-	}, [paused])
+		return () => clearInterval(interval)
+	}, [paused, showTimer, socket])
 
 	return (
 		<>

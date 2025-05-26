@@ -109,12 +109,22 @@ class PlayerRegisterSerializer(serializers.Serializer):
     def validate(self, data):
         if not data.get('username'):
             raise serializers.ValidationError({"code": 1009}) # Nom d'utilisateur requis.
+        
+        username = data['username']
+        if len(username) > 20:
+            raise serializers.ValidationError({"code": 1011}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
+        if ' ' in username:
+            raise serializers.ValidationError({"code": 1012}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            raise serializers.ValidationError({"code": 1013}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
+        
         if not data.get('password') or not data.get('password2'):
             raise serializers.ValidationError({"code": 1010}) # Mot de passe requis.
         if data['password'] != data['password2']:
             raise serializers.ValidationError({"code": 1001})  # Les mots de passe ne correspondent pas.
         if Player.objects.filter(name=data['username']).exists():
             raise serializers.ValidationError({"code": 1002})  # Ce nom d'utilisateur est déjà pris.
+        
         validate_strong_password(data['password'])
         return data
 
@@ -173,7 +183,7 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
                 img = Image.open(avatar)  # Ré-ouvrir pour traitement
 
                 # Vérification des dimensions
-                max_dimensions = (500, 500)
+                max_dimensions = (550, 550)
                 if img.width > max_dimensions[0] or img.height > max_dimensions[1]:
                     raise serializers.ValidationError({"code": 1034, "message": "Image dimensions exceed 500x500"})
 
@@ -228,8 +238,17 @@ class PlayerUpdateNameSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         if not check_password(data['current_password'], user.password):
             raise serializers.ValidationError({"code": 1008})  # Mot de passe incorrect.
-        if Player.objects.filter(name=data['name']).exists():
+        
+        username = data['name']
+        if Player.objects.filter(username).exists():
             raise serializers.ValidationError({"code": 1002}) #Ce nom d'utilisateur est déjà pris.
+        if len(username) > 20:
+            raise serializers.ValidationError({"code": 1011}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
+        if ' ' in username:
+            raise serializers.ValidationError({"code": 1012}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            raise serializers.ValidationError({"code": 1013}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
+        
         return data
 
     def update(self, instance, validated_data):
@@ -267,12 +286,85 @@ class PlayerDeleteSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = self.context['request'].user
+        # Vérifier que l'utilisateur est authentifié
+        if not user.is_authenticated:
+            raise serializers.ValidationError({"code": 1009, "message": "Utilisateur non authentifié."})
+        
+        # Vérifier le mot de passe
+        if 'password' not in data:
+            raise serializers.ValidationError({"code": 1007, "message": "Le champ mot de passe est requis."})
         if not user.check_password(data['password']):
-            raise serializers.ValidationError({"code": 1008})  # Mot de passe incorrect.
+            raise serializers.ValidationError({"code": 1008, "message": "Mot de passe incorrect."})
         return data
-    
+
+    def reset_player(self, player):
+        """Réinitialise les champs du joueur."""
+        if not player:
+            return
+        player.forty_two_id = None
+        player.name = "[DELETED USER]"
+        player.online = False
+        player.last_seen = None
+        player.avatar = "avatars/default.jpg"
+        player.two_factor_enabled = False
+        player.save()
+
+    def remove_friend(self, player):
+        """Récupère et supprime toutes les relations d'amitié impliquant le joueur."""
+        if not player:
+            return []
+        friendships = Friendship.objects.filter(models.Q(player_1=player) | models.Q(player_2=player))
+        friendship_data = [
+            {
+                "id": friendship.id,
+                "player_1": friendship.player_1.id,
+                "player_2": friendship.player_2.id
+            }
+            for friendship in friendships
+        ]
+        if friendships.exists():
+            friendships.delete()
+        return friendship_data
+
+    def remove_block(self, player):
+        """Récupère et supprime toutes les relations de blocage impliquant le joueur."""
+        if not player:
+            return []
+        blocks = Block.objects.filter(models.Q(blocker=player) | models.Q(blocked=player))
+        block_data = [
+            {
+                "id": block.id,
+                "player_1": block.player_1.id,
+                "player_2": block.player_2.id
+            }
+            for block in blocks
+        ]
+        if blocks.exists():
+            blocks.delete()
+        return block_data
+
+    def update(self, instance, validated_data):
+        """Désactive l'utilisateur et réinitialise les données du joueur."""
+        # Récupérer le joueur associé
+        player = Player.objects.filter(user=instance).first()
+
+        # Réinitialiser le joueur et supprimer les relations
+        self.reset_player(player)
+        self.remove_friend(player)
+        self.remove_block(player)
+
+        # Désactiver l'utilisateur
+        instance.is_active = False
+        instance.username = f"deleted_{player.id}"
+        instance.save()
+
+        return instance
+
     def to_representation(self, instance):
-        return {"code": 1000}
+        """Retourne une réponse standard pour indiquer le succès."""
+        return {
+            "code": 1000,
+        }
 
 # FONCTION UTILITAIRE pour blacklister tous les tokens d'un utilisateur
 def blacklist_all_user_tokens(user):

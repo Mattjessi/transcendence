@@ -1,5 +1,5 @@
 # Django imports
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.db import models
@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from social_django.utils import psa
 from django.conf import settings
-from urllib.parse import urlencode
+from django.http import JsonResponse
 
 # DRF imports
 from rest_framework import status, viewsets, generics, permissions
@@ -24,6 +24,12 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 # Local imports
 from shared_models.models import Player, Match, Tournament, Friendship, Block
 from . import serializers
+
+@method_decorator(csrf_exempt, name='dispatch')
+class StatusApi(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        return Response({"code": 1000})
 
 # ==============================
 # API DJANGO REST FRAMEWORK
@@ -104,15 +110,12 @@ class PlayerUpdatePWD_api(generics.UpdateAPIView):
         return self.request.user
 
 @method_decorator(csrf_exempt, name='dispatch')
-class PlayerDelete_api(generics.DestroyAPIView):
+class PlayerDelete_api(generics.UpdateAPIView):
     serializer_class = serializers.PlayerDeleteSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
-
-    def perform_destroy(self, instance):
-        instance.delete()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class PlayerLogin_api(APIView):
@@ -436,19 +439,3 @@ class Auth42CallbackView(APIView):
 class Auth42CompleteView(generics.CreateAPIView):
     serializer_class = serializers.Auth42CompleteSerializer
     permission_classes = [AllowAny]
-
-def register_complete_clean(request):
-    """
-    Intercepte /register/42/complete avec des query params dangereux.
-    Nettoie la requête avant de la passer au frontend.
-    """
-    error = request.GET.get("error")
-
-    if error:
-        # Rediriger proprement sans description
-        clean_url = f"/register/42/complete?{urlencode({'error': error})}"
-        return redirect(clean_url)
-
-    # Sinon, juste rendre un template vide (ou avec un JS de redirection si SPA)
-    return render(request, "safe_redirect.html")  # ou HttpResponse(status=204)
-

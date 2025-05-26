@@ -21,6 +21,8 @@ function SettingsModal({ settings, setSettings }) {
 	const [nPassShow2, setNPassShow2] = useState(false)
 	const [password2FA, setPassword2FA] = useState('')
 	const [passShow2FA, setPassShow2FA] = useState(false)
+	const [passDelete, setPassDelete] = useState('')
+	const [showPassDelete, setShowPassDelete] = useState(false)
 
 	const [dfaShow, setdfaShow] = useState(false)
 	const hideDFA = () => setdfaShow(false)
@@ -38,10 +40,7 @@ function SettingsModal({ settings, setSettings }) {
 				refreshUser()
 			}
 		}
-		catch(error) {
-			console.log(error)
-			handleClose()
-		}
+		catch {handleClose()}
 	}
 	
 	const changePassword = async () => {
@@ -51,21 +50,15 @@ function SettingsModal({ settings, setSettings }) {
 			if (response.data.code == 1000)
 				handleClose()
 		}
-		catch(error) {
-			console.log(error)
-			handleClose()
-		}
+		catch {handleClose()}
 	}
 	
-	const removeProfile = async () => {
+	const removeProfile = async (password) => {
 		try {
-			const response = await axiosInstance.delete(`/users/api/player/delete/`)
+			const response = await axiosInstance.patch(`/users/api/player/delete/`, {password: password})
 			logout()
 		}
-		catch(error) {
-			console.log(error)
-			handleClose()
-		}	
+		catch {handleClose()}	
 	}
 
 	const remove2FA = async (password2FA) => {
@@ -77,10 +70,7 @@ function SettingsModal({ settings, setSettings }) {
 				handleClose()
 			}
 		}
-		catch (error) {
-			console.log(error)
-			handleClose()
-		}
+		catch {handleClose()}
 	}
 		
 	const enable2FA = () => {
@@ -176,8 +166,21 @@ function SettingsModal({ settings, setSettings }) {
 					
 				</div>
 				<h5 className="mb-3">Delete Account</h5>
-				<div className="d-grid">
-					<Button variant="danger" onClick={removeProfile}>Delete</Button>
+				<Form.Group className="mb-3">
+					<div className="d-flex">
+						<Form.Control type={showPassDelete ? "text" : "password"} placeholder="Insert password"
+							value={passDelete} onChange={(e) => setPassDelete(e.target.value)}
+							className="rounded-0 rounded-start"/>
+						<Button type="button" className="rounded-0 rounded-end btn btn-light"
+							aria-label="show" onClick={() => setShowPassDelete(!passDelete)}>
+							{showPassDelete
+								? <i className="eye bi-eye-fill"></i>
+								: <i className="eye bi-eye-slash-fill"></i>}
+							</Button>
+						</div>
+				</Form.Group>
+				<div className="d-grid mb-4">
+					<Button variant="danger" onClick={() => removeProfile(passDelete)}>Delete</Button>
 				</div>
 			</Modal.Body>
 			<DFAModal show={ dfaShow } hide={ hideDFA } handleClose={ handleClose }/>
