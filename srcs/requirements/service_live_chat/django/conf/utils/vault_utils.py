@@ -19,29 +19,23 @@ def get_vault_secrets():
 
     while True:
         try:
-            print("Tentative de récupération des secrets Vault...")
-
-            # Lire le token Vault
+            # Token read
             with open(vault_token_path, 'r') as file:
                 vault_token = file.read().strip()
 
-            # Créer le client Vault
+            # Vault client create
             client = hvac.Client(url=vault_url, token=vault_token)
-
-            if not client.is_authenticated():
-                raise Exception("Authentification échouée avec Vault")
 
             secrets = {}
 
-            # Récupérer chaque secret
+            # Recover each token
             for key in keys:
                 response = client.secrets.kv.v1.read_secret(path=f'live_chat/django/{key}')
                 secrets[key] = response['data'].get(key)
                 if secrets[key] is None:
-                    raise Exception(f"Clé '{key}' absente ou vide dans Vault")
+                    raise Exception(f"'{key}' key is empty")
 
-            print("Secrets récupérés avec succès.")
             return secrets
 
         except Exception as e:
-            print(f"Erreur : {e} — nouvelle tentative immédiatement.")
+            print(f"{e}")

@@ -1,6 +1,7 @@
 all:
 
-	@sh set_dom.sh
+	@sh ./scripts/set_dom.sh
+	@sh ./scripts/django_secret_key_gen.sh
 
 	@docker compose -f ./srcs/docker-compose.yml down > /dev/null
 

@@ -57,6 +57,8 @@ COPY --chown=root:root ./conf/transcendence_fr.conf ./transcendence_fr.conf
 COPY --chown=root:root ./tools/init_nginx.sh /tmp/init_nginx.sh
 RUN chmod +x /tmp/init_nginx.sh
 
+COPY ./conf/static_error.html /usr/share/nginx/html/static_error.html
+
 EXPOSE 443
 
 CMD ["/tmp/init_nginx.sh"]
