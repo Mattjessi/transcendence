@@ -14,7 +14,7 @@ done
 
 #Unseal key and root token recovery
 
-SECRETS_KEY_PATH='./srcs/secrets/.vault_secrets_key'
+SECRETS_KEY_PATH='./srcs/secrets/.vault_secrets_key.json'
 
 docker exec -it vault_secrets vault operator init -format=json | tr -d '\r' > $SECRETS_KEY_PATH
 

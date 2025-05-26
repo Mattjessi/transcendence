@@ -17,8 +17,8 @@ all:
 		docker volume rm -f $(shell docker volume ls -q) > /dev/null; \
 	fi
 
-	@if [ -e ./srcs/secrets/.vault_secrets_key ]; then \
-		rm ./srcs/secrets/.vault_secrets_key > /dev/null; \
+	@if [ -e ./srcs/secrets/.vault_secrets_key.json ]; then \
+		rm ./srcs/secrets/.vault_secrets_key.json > /dev/null; \
 	fi
 
 	@docker compose -f ./srcs/docker-compose.yml up -d vault > /dev/null
@@ -29,12 +29,12 @@ all:
 	@docker compose -f ./srcs/docker-compose.yml up -d service_game_pong_postgresql > /dev/null
 	@docker compose -f ./srcs/docker-compose.yml up -d service_live_chat_postgresql > /dev/null
 
-	@docker compose -f ./srcs/docker-compose.yml up -d
-
-	@docker exec service_user_handler_postgresql sh /home/init/01_replicat_init.sh
-	@docker exec service_game_pong_postgresql sh /home/init/01_replicat_init.sh
-	@docker exec service_live_chat_postgresql sh /home/init/01_replicat_init.sh
-	@docker exec service_user_handler_postgresql sh /home/init/02_replicat_init.sh
+	@docker compose -f ./srcs/docker-compose.yml up -d > /dev/null
+ 
+	@docker exec service_user_handler_postgresql sh /home/init/01_replicat_init.sh > /dev/null
+	@docker exec service_game_pong_postgresql sh /home/init/01_replicat_init.sh > /dev/null
+	@docker exec service_live_chat_postgresql sh /home/init/01_replicat_init.sh > /dev/null
+	@docker exec service_user_handler_postgresql sh /home/init/02_replicat_init.sh > /dev/null
 
 fclean:
 
@@ -52,6 +52,6 @@ fclean:
 		docker volume rm -f $(shell docker volume ls -q) > /dev/null; \
 	fi
 
-	@if [ -e ./srcs/secrets/.vault_secrets_key ]; then \
-		rm ./srcs/secrets/.vault_secrets_key > /dev/null; \
+	@if [ -e ./srcs/secrets/.vault_secrets_key.json ]; then \
+		rm ./srcs/secrets/.vault_secrets_key.json > /dev/null; \
 	fi
