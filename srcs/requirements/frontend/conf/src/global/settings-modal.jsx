@@ -172,7 +172,7 @@ function SettingsModal({ settings, setSettings }) {
 							value={passDelete} onChange={(e) => setPassDelete(e.target.value)}
 							className="rounded-0 rounded-start"/>
 						<Button type="button" className="rounded-0 rounded-end btn btn-light"
-							aria-label="show" onClick={() => setShowPassDelete(!passDelete)}>
+							aria-label="show" onClick={() => setShowPassDelete(!showPassDelete)}>
 							{showPassDelete
 								? <i className="eye bi-eye-fill"></i>
 								: <i className="eye bi-eye-slash-fill"></i>}
