@@ -8,7 +8,7 @@ class StatusChoices(models.TextChoices):
     REFUSEE = 'Refusée'
     EN_COURS = 'En cours'
     TERMINE = 'Terminée'
-    ANNULER  = 'Annulé'
+    ANNULEE  = 'Annulée'
 
 class TypeChoices(models.TextChoices):
     IA = 'IA'
