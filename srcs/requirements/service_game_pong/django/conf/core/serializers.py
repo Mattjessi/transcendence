@@ -123,7 +123,7 @@ class PongInvitationSerializer(serializers.ModelSerializer):
 
         # Récupérer les données envoyées
         player_2_id = attrs.get("player_2_id")
-        number_of_rounds = attrs.get("number_of_rounds")
+        number_of_rounds = 1
         max_score_per_round = attrs.get("max_score_per_round")
         match_type = attrs.get("match_type", TypeChoices.NORMAL)
 
@@ -448,7 +448,6 @@ class InvitationDeclineSerializer(serializers.Serializer):
 class TournamentCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50, required=False)
     max_score_per_round = serializers.IntegerField(default=3, min_value=1, max_value=9)
-    number_of_rounds = serializers.IntegerField(default=3, min_value=1, max_value=9)
 
     def validate(self, attrs):
         user = self.context["request"].user
@@ -463,11 +462,6 @@ class TournamentCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"code": 4013}
             )  # Le score maximum par manche doit être impair
-
-        if attrs["number_of_rounds"] % 2 == 0:
-            raise serializers.ValidationError(
-                {"code": 4014}
-            )  # Le nombre de manches doit être impair
 
         if Tournament.objects.filter(
             Q(player_1=player)
@@ -489,7 +483,7 @@ class TournamentCreateSerializer(serializers.Serializer):
             player_1=validated_data["player_1"],
             name=validated_data.get("name", ""),
             max_score_per_round=validated_data["max_score_per_round"],
-            number_of_rounds=validated_data["number_of_rounds"],
+            number_of_rounds=1,
         )
         return tournament
 

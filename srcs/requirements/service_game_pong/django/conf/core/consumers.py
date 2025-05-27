@@ -281,7 +281,6 @@ class PongConsumer(AsyncWebsocketConsumer):
                 winner_playerid = winner_info.get("id")
             except Exception as e:
                 print(f"Error getting winner info: {str(e)}")
-        # Envoyer l'événement de fin de jeu actuel
         await self.channel_layer.group_send(
             self.room_group_name,
             {
