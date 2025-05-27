@@ -32,6 +32,6 @@ for code in $error_code; do
 		COLOR=$RED
 	fi
 
-	echo -e "${COLOR}----- Logs for status code: $code -----${NC}"
+	echo "${COLOR}----- Logs for status code: $code -----${NC}"
 	docker logs nginx 2>&1 | grep $code | sed G
 done
