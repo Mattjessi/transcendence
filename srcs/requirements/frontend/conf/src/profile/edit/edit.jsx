@@ -41,12 +41,11 @@ function ProfileEdit({ user }) {
 			}
 		}
 		catch(error) {
-			console.log(error)
 			setFile(null)
 			setPreview(null)
 			if (fileInputRef.current)
 				fileInputRef.current.value = null
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}

@@ -37,7 +37,7 @@ function JoinMatch({ state, setState, setShow, setInfo }) {
 		}
 		catch(error) {
 			fonction()
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}
@@ -52,7 +52,7 @@ function JoinMatch({ state, setState, setShow, setInfo }) {
 		}
 		catch(error) {
 			fonction()
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}

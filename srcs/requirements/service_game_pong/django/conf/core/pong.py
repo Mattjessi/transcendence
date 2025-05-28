@@ -110,6 +110,3 @@ async def game_pong(game_id, consumer):
     consumer.c_ball_speed[consumer.match_id] = ball_speed
     consumer.c_scorep1[consumer.match_id] = score_player_1
     consumer.c_scorep2[consumer.match_id] = score_player_2
-
-    # Sauvegarder l'état
-    #await consumer.save_game_state()

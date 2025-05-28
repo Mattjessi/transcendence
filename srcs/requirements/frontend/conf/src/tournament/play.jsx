@@ -64,16 +64,18 @@ function PlayMatch({ setState, setType }) {
 				const idData = await axiosInstance.get("/pong/tournament/get-id/")
 				if (idData && idData.data.finalist1 != null && idData.data.finalist2 != null) {
 					final = await axiosInstance.put(`/pong/tournament/${idData.data.tournament_id}/start-final/`)
-					console.log("idData:", idData)
-					console.log("final:", final)
 					await axiosInstance.post("/live_chat/general/send/", {content: `#Time for final : ${idData.data.finalist1} vs ${idData.data.finalist2}`})
 				}
 			}
-			catch(error) {console.log(error)}
+			catch(error) {
+				if (error && error.response && error.response.data && error.response.data.message) {
+					setInfo(error.response.data.message)
+					setShow(true)
+				}
+			}
 		}
 
 		const handleMessage = async () => {
-			console.log(lastMessage)
 			if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
 				//closeSocket()
 				if (lastMessage.type == "match_ended") {

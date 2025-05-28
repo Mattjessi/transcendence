@@ -50,7 +50,7 @@ function WaitMatch({ setState, setType, setShow, setInfo }) {
 				players: getPlayers(a.player_1, a.player_2, a.player_3, a.player_4)})
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}
@@ -69,7 +69,7 @@ function WaitMatch({ setState, setType, setShow, setInfo }) {
 			}
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}
@@ -87,7 +87,7 @@ function WaitMatch({ setState, setType, setShow, setInfo }) {
 		if (ready == false) return
 		try {const response = await axiosInstance.put(`/pong/tournament/${id}/start/`)}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}
@@ -98,7 +98,7 @@ function WaitMatch({ setState, setType, setShow, setInfo }) {
 	const cancel = async (id) => {
 		try {await axiosInstance.delete(`/pong/tournament/${id}/cancel/`)}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}
@@ -112,7 +112,7 @@ function WaitMatch({ setState, setType, setShow, setInfo }) {
 			setState("")
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setShow(true)
 				setInfo(error.response.data.message)
 			}

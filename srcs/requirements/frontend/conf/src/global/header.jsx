@@ -27,7 +27,7 @@ function Header({ user, state, setState }) {
 	const setTo = (string) => {
 		if (state && state == "play") {
 			closeSocket()
-			setState("")
+			navigate("/home")
 		}
 		if (string == "settings")
 			setSettings(true)

@@ -59,7 +59,6 @@ const BGprivate = ({ state, type }) => {
 
 	useEffect(() => {
 		if (NotifMessages.type == "match_created") {
-			console.log("in private", NotifMessages)
 			setGroupName({name1: "...", name2: "..."})
 			setGroupScore({score1: "0", score2: "0"})
 		}

@@ -52,7 +52,7 @@ function SettingsModal({ settings, setSettings }) {
 			}
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -67,7 +67,7 @@ function SettingsModal({ settings, setSettings }) {
 				handleClose()
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -81,7 +81,7 @@ function SettingsModal({ settings, setSettings }) {
 				logout()
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -98,7 +98,7 @@ function SettingsModal({ settings, setSettings }) {
 			}
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}

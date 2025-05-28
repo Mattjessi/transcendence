@@ -32,7 +32,7 @@ function RequestModal({ tab, setShow, setInfo }) {
 			setFilteredFriends(a)
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -42,7 +42,7 @@ function RequestModal({ tab, setShow, setInfo }) {
 	const cancelRequest = async (playerID) => {
 		try {await axiosInstance.delete(`/users/api/friend-request/cancel/${playerID}/`)}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -53,7 +53,7 @@ function RequestModal({ tab, setShow, setInfo }) {
 	const acceptRequest = async (playerID) => {
 		try {await axiosInstance.put(`/users/api/friend-request/accept/${playerID}/`, { player_2: playerID })}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -64,7 +64,7 @@ function RequestModal({ tab, setShow, setInfo }) {
 	const rejectRequest = async (playerID) => {
 		try {await axiosInstance.delete(`/users/api/friend-request/reject/${playerID}/`)}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}

@@ -35,11 +35,10 @@ function Register() {
 			if (response.data.code == 1000) navigate("/")
 		}
 		catch (error) {
-			console.log(error)
 			setUsername("")
 			setPassword1("")
 			setPassword2("")
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
