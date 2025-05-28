@@ -120,8 +120,8 @@ class PlayerRegisterSerializer(serializers.Serializer):
         if Player.objects.filter(name=username).exists():
             raise serializers.ValidationError({"code": 1002, "message": "This username is already taken."})  # Ce nom d'utilisateur est déjà pris.
         
-        pwd = data.get['password']
-        pwd2 = data.get['password2']
+        pwd = data.get('password')
+        pwd2 = data.get('password2')
         if not pwd or not pwd2:
             raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
         if pwd != pwd2:
@@ -777,8 +777,8 @@ class Auth42CompleteSerializer(serializers.Serializer):
     password2 = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
 
     def validate(self, data):
-        pwd = data.get['password']
-        pwd2 = data.get['password2']
+        pwd = data.get('password')
+        pwd2 = data.get('password2')
         if not pwd or not pwd2:
             raise serializers.ValidationError({"code": 1010, "message": "Password required."})
         if pwd != pwd2:
