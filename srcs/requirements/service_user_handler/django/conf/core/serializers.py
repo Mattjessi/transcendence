@@ -102,31 +102,32 @@ class BlockListSerializer(serializers.ModelSerializer):
 #===CRUD PLAYER====
 
 class PlayerRegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True)
-    password2 = serializers.CharField(write_only=True)
+    username = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
+    password = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
+    password2 = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
 
-    def validate_username(self, value):
-        if len(value) > 20:
-            raise serializers.ValidationError({"code": 1011, "message": "The username must not exceed 20 characters."}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
-        if ' ' in value:
-            raise serializers.ValidationError({"code": 1012, "message": "The username must not contain spaces."}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
-        if not re.match(r'^[a-zA-Z0-9]+$', value):
-            raise serializers.ValidationError({"code": 1013, "message": "The username must only contain letters and numbers."}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
-        return value or ""
 
     def validate(self, data):
-        username = data['username']
-        if not data.get('username'):
+        username = data.get('username')
+        if not username:
             raise serializers.ValidationError({"code": 1009, "message": "Username required."}) # Nom d'utilisateur requis.
-        if not data.get('password') or not data.get('password2'):
-            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({"code": 1001, "message": "The passwords do not match."})  # Les mots de passe ne correspondent pas.
-        if Player.objects.filter(name=data['username']).exists():
+        if len(username) > 20:
+            raise serializers.ValidationError({"code": 1011, "message": "The username must not exceed 20 characters."}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
+        if ' ' in username:
+            raise serializers.ValidationError({"code": 1012, "message": "The username must not contain spaces."}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            raise serializers.ValidationError({"code": 1013, "message": "The username must only contain letters and numbers."}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
+        if Player.objects.filter(name=username).exists():
             raise serializers.ValidationError({"code": 1002, "message": "This username is already taken."})  # Ce nom d'utilisateur est déjà pris.
         
-        validate_strong_password(data['password'])
+        pwd = data.get['password']
+        pwd2 = data.get['password2']
+        if not pwd or not pwd2:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
+        if pwd != pwd2:
+            raise serializers.ValidationError({"code": 1001, "message": "The passwords do not match."})  # Les mots de passe ne correspondent pas.
+        
+        validate_strong_password(pwd)
         return data
 
     def create(self, validated_data):
@@ -163,6 +164,11 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
         if instance != request.user.player_profile:
             raise serializers.ValidationError({"code": 1031, "message": "Unauthorized to update this profile"})
 
+        description = data.get('description')
+        if description:
+            if len(username) > 20:
+                raise serializers.ValidationError({"code": 1011, "message": "The description must not exceed 20 characters."}) # La description ne doit pas dépasser 20 caractères.
+        
         # Validation de l'image
         avatar = data.get('avatar')
         if avatar:
@@ -228,33 +234,34 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
         return {"code": 1000}
 
 class PlayerUpdateNameSerializer(serializers.ModelSerializer):
-    name             = serializers.CharField(write_only=True, required=True)
-    current_password = serializers.CharField(write_only=True, required=True)
+    name             = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
+    current_password = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Player
         fields = ['name', 'current_password']
 
-    def validate_name(self, value):
-        if not re.match(r'^[a-zA-Z0-9]+$', value):
-            raise serializers.ValidationError({"code": 1013, "message": "Username must only contain letters and numbers"}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
-        if len(value) > 20:
-            raise serializers.ValidationError({"code": 1011, "message": "The username must not exceed 20 characters."}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
-        if ' ' in value:
-            raise serializers.ValidationError({"code": 1012, "message": "The username must not contain spaces."}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
-        return value
 
     def validate(self, data):
         user = self.context['request'].user
         if not user.is_authenticated:
             raise serializers.ValidationError({"code": 1030, "message": "Unauthenticated user."})
-        if not check_password(data['current_password'], user.password):
-            raise serializers.ValidationError({"code": 1008, "message": "Password is incorrect"})  # Mot de passe incorrect.
         
         name = data['name']
+        if not re.match(r'^[a-zA-Z0-9]+$', name):
+            raise serializers.ValidationError({"code": 1013, "message": "Username must only contain letters and numbers"}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
+        if len(name) > 20:
+            raise serializers.ValidationError({"code": 1011, "message": "The username must not exceed 20 characters."}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
+        if ' ' in name:
+            raise serializers.ValidationError({"code": 1012, "message": "The username must not contain spaces."}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
         if Player.objects.filter(name=name).exists():
             raise serializers.ValidationError({"code": 1002, "message": "Username already chosen"}) #Ce nom d'utilisateur est déjà pris.
         
+        pwd = data['current_password']
+        if not pwd:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
+        if not check_password(pwd, user.password):
+            raise serializers.ValidationError({"code": 1008, "message": "Password is incorrect"})  # Mot de passe incorrect.
         return data
 
     def update(self, instance, validated_data):
@@ -272,11 +279,18 @@ class PlayerUpdatePWDSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = self.context['request'].user
-        if not user.check_password(data['current_password']):
+        cpwd = data.get('current_password')
+        pwd  = data.get('new_pwd1')
+        pwd2 = data.get('new_pwd2')
+
+        if not pwd or not pwd2 or not cpwd:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
+        if not user.check_password(cpwd):
             raise serializers.ValidationError({"code": 1008, "message": "Password is incorrect"})  # Mot de passe incorrect.
-        if data['new_pwd1'] != data['new_pwd2']:
+        if pwd != pwd2:
             raise serializers.ValidationError({"code": 1001, "message": "Passwords aren't similar"})  # Les mots de passe ne correspondent pas.
-        validate_strong_password(data['new_pwd1'])   # À voir dans validators.py
+        validate_strong_password(pwd)   # À voir dans validators.py
+
         return data
 
     def update(self, instance, validated_data):
@@ -296,10 +310,12 @@ class PlayerDeleteSerializer(serializers.Serializer):
         if not user.is_authenticated:
             raise serializers.ValidationError({"code": 1009, "message": "Unauthenticated user."})
         # Vérifier le mot de passe
-        if 'password' not in data:
-            raise serializers.ValidationError({"code": 1007, "message": "The password field is required."})
-        if not user.check_password(data['password']):
-            raise serializers.ValidationError({"code": 1008, "message": "Incorrect password."})
+        pwd = data.get('password')
+
+        if not pwd:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
+        if not user.check_password(pwd):
+            raise serializers.ValidationError({"code": 1008, "message": "Password is incorrect"})  # Mot de passe incorrect.
         return data
 
     def reset_player(self, player):
@@ -454,24 +470,23 @@ class PlayerLoginSerializer(serializers.Serializer):
         }
 
 class PlayerLogoutSerializer(serializers.Serializer):
-    token = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
-
     def validate(self, data):
-        token = data.get('token')
-
-        if not token:
-            raise serializers.ValidationError({"code": 1011})
-
+        user = self.context['request'].user
         try:
-            refresh_token = RefreshToken(token)
-            refresh_token.blacklist()
-        except TokenError:
-            raise serializers.ValidationError({"code": 1012})
+            player = Player.objects.get(user=user)
+        except Player.DoesNotExist:
+            raise serializers.ValidationError({"code": 1113, "message": "pas de player associer"})
 
+        data['user'] = user
+        data['player'] = player
         return data
 
     def create(self, validated_data):
-        return {"success": True}
+        user = validated_data['user']
+        player = validated_data['player']
+        blacklist_all_user_tokens(user)
+
+        return player
 
     def to_representation(self, instance):
         return {"code": 1000}
@@ -655,12 +670,7 @@ class UnblockPlayerSerializer(serializers.ModelSerializer):
 #===2FA====
 
 class Enable2FASerializer(serializers.Serializer):
-    otp_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
-
-    def validate_otp_code(self, value):
-        if value and not re.match(r'^\d{6}$', value):
-            raise serializers.ValidationError({"code": 1037, "message": "The OTP code must be exactly 6 digits."})
-        return value
+    otp_code = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
 
     def validate(self, data):
         user = self.context['request'].user
@@ -668,6 +678,9 @@ class Enable2FASerializer(serializers.Serializer):
             raise serializers.ValidationError({"code": 1030, "message": "Unauthenticated user"})  # Utilisateur non authentifié
 
         otp_code = data.get('otp_code')
+        if otp_code and not re.match(r'^\d{6}$', otp_code):
+            raise serializers.ValidationError({"code": 1037, "message": "The OTP code must be exactly 6 digits."})
+    
         player = user.player_profile
         device, created = TOTPDevice.objects.get_or_create(user=user, name=f"{player.name}_totp")
         if otp_code and not device.verify_token(otp_code):
@@ -731,11 +744,14 @@ class Disable2FASerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        password = data["password"]
+        password = data.get('password')
         user = self.context['request'].user
         if not user.is_authenticated:
             raise serializers.ValidationError({"code": 1030, "message": "Unauthenticated user"})  # Utilisateur non authentifié
-        if not user.check_password(data['password']):
+
+        if not password:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
+        if not user.check_password(password):
             raise serializers.ValidationError({"code": 1008, "message": "Password is incorrect"})  # Mot de passe incorrect
         return data
 
@@ -757,12 +773,18 @@ class Disable2FASerializer(serializers.Serializer):
 #===OAUTH====
 
 class Auth42CompleteSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True, required=True)
-    password2 = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
+    password2 = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
 
     def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({"code": 1001, "message": "Passwords are not similar"})
+        pwd = data.get['password']
+        pwd2 = data.get['password2']
+        if not pwd or not pwd2:
+            raise serializers.ValidationError({"code": 1010, "message": "Password required."})
+        if pwd != pwd2:
+            raise serializers.ValidationError({"code": 1001, "message": "The passwords do not match."})
+        
+        validate_strong_password(pwd)
         
         oauth_data = self.context['request'].session.get('oauth_42_data')
         if not oauth_data:
@@ -798,7 +820,7 @@ class Auth42CompleteSerializer(serializers.Serializer):
                 response = requests.get(avatar_url)
                 if response.status_code == 200:
                     # Création d'un nom de fichier simple
-                    file_name = f"avatar_42_{player.id}.jpg"
+                    file_name = f"42_avatar_{player.id}.jpg"
                     
                     # Enregistrement direct de l'image
                     from django.core.files.base import ContentFile
