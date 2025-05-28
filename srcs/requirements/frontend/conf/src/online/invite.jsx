@@ -3,7 +3,7 @@ import { Modal, Button } from "react-bootstrap"
 import { useAuth } from "../auth/context"
 import axiosInstance from "../auth/instance"
 
-function InviteMatch({ state, setState, setType }) {
+function InviteMatch({ state, setState, setShow, setInfo }) {
 
 	const [data, setData] = useState(null)
 	const { user } = useAuth()
@@ -11,14 +11,20 @@ function InviteMatch({ state, setState, setType }) {
 	const fonction = async () => {
 		try {
 			const playerData = await axiosInstance.get('users/api/player/')
-			const friendData = await axiosInstance.get('users/api/friend/list/')
+			const blockData = await axiosInstance.get('/users/api/block/list/')
+			
 			const a = playerData.data
-				.filter(player => friendData.data
-					.some(friend => friend.status == "accepted" && friend.player_1 == player.name) && player.name != user.name && player.online == true)
-				.filter(player => ({name: player.name, id: player.id, avatar: player.avatar}))
+				.filter(player => !blockData.data.some(block => block.blocked == player.name || block.blocker == player.name) &&
+					player.name != user.name)
 			setData(a)
 		}
-		catch {}
+		catch(error) {
+			setState("")
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const invite = async (id) => {
@@ -29,14 +35,20 @@ function InviteMatch({ state, setState, setType }) {
 				max_score_per_round: 3,
 				match_type: "Normal"
 			})
-			setType("paddle_l")
 			setState("wait")
 		}
-		catch {}
+		catch(error) {
+			setState("")
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	useEffect(() => {
-		fonction()
+		if (state == "invite")
+			fonction()
 	}, [state])
 
 	return (

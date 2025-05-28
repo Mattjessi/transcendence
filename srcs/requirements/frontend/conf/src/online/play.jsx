@@ -4,6 +4,7 @@ import { useAuth } from "../auth/context"
 import { useGame } from "../websockets/game"
 import { Modal, Button } from "react-bootstrap"
 import { confetti } from "dom-confetti"
+import { useNotification } from "../websockets/notification"
 
 function WinnerModal({ winnerName, show, onClose }) {
 
@@ -26,7 +27,7 @@ function WinnerModal({ winnerName, show, onClose }) {
 	}
 
 	return (
-		<Modal show={show} onHide={onClose} centered>
+		<Modal show={show} onHide={backToMenu} centered>
 			<Modal.Body className="text-center">
 				<div ref={confettiRef} />
 				<h2 className="fw-bold">🏆 {winnerName} wins!</h2>
@@ -41,18 +42,22 @@ function PlayMatch() {
 
 	const { getSocket, closeSocket, messages } = useGame()
 	const { setMessages, setPongMessages, setScoreMessages } = useGame()
+	const { setNotifMessages } = useNotification()
 	const [paused, setPaused] = useState(false)
 	const { user } = useAuth()
 	const [end, setEnd] = useState(false)
 	const closeEnd = () => setEnd(false)
 	const [winner, setWinner] = useState("")
 	const [timer, setTimer] = useState(60)
-	const [showTimer, setShowTimer] = useState(true)
 	const socket = getSocket()
+
+	const declareWin = async () => {socket.send(JSON.stringify({ action: "declare_win" }))}
 
 	useEffect(() => {
 		if (!messages.length) return
 		const lastMessage = messages[messages.length - 1]
+		if (lastMessage.type == "game_resumed")
+			setNotifMessages(lastMessage)
 		if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
 			closeSocket()
 			if (lastMessage.type == "match_ended")
@@ -65,35 +70,16 @@ function PlayMatch() {
 			setPongMessages([])
 			setScoreMessages([])
 		}
-		if (lastMessage.type == "game_paused")
+		if (lastMessage.type == "game_paused" || (lastMessage.type == "player_count" && lastMessage.player_count == 1))
 			setPaused(true)
-		if (lastMessage.type == "player_count" && lastMessage.player_count == 1) {
-			setPaused(true)
-			setShowTimer(false)
-		}
 		if (lastMessage.type == "forfeit_not_available") {
 			setTimer(lastMessage.remaining_seconds)
 		}
 		if (lastMessage.type == "player_count" && lastMessage.player_count == 2) {
 			setPaused(false)
-			setShowTimer(true)
+			setTimer(60)
 		}
 	}, [messages])
-
-	useEffect(() => {
-	if (paused === false || showTimer === false || !socket || socket.readyState !== WebSocket.OPEN) return;
-		const interval = setInterval(() => {
-			setTimer((prevTimer) => {
-				if (prevTimer <= 1) {
-					socket.send(JSON.stringify({ action: "declare_win" }))
-					clearInterval(interval)
-					return 0
-				}
-				return prevTimer - 1
-			})
-		}, 1000)
-		return () => clearInterval(interval)
-	}, [paused, showTimer, socket])
 
 	return (
 		<>
@@ -101,7 +87,7 @@ function PlayMatch() {
 		<div className="position-absolute top-0 d-flex flex-column justify-content-center align-items-center vh-100 w-100">
   			<i className="bi bi-pause-circle" style={{ fontSize: "20rem", color: "white" }} />
 			<div className="fs-1 mb-5">
-				{showTimer ? `Timer : ${timer}s` : ""}
+				<Button className="" onClick={() => declareWin()}>Declare win in {timer}s</Button>
 			</div>
 		</div> : <></> }
 		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd }/>

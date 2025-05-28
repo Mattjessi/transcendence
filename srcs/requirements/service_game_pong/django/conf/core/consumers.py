@@ -173,6 +173,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 class PongConsumer(AsyncWebsocketConsumer):
     # Variables de classe pour stocker l'état du jeu et les tâches
+    c_player1_name = {}
+    c_player2_name = {}
     c_paddleL = {}  # Position de la raquette gauche par match_id
     c_paddleR = {}  # Position de la raquette droite par match_id
     c_ballx = {}  # Position x de la balle par match_id
@@ -418,7 +420,6 @@ class PongConsumer(AsyncWebsocketConsumer):
             match.save()
 
             self.c_match_winner[self.match_id] = winner_name
-            # Retourner les données, pas un événement
             return {
                 "winner": match.winner.name if match.winner else None,
                 "match_number": match.match_number if match else 0,
@@ -486,6 +487,8 @@ class PongConsumer(AsyncWebsocketConsumer):
         self.c_paddleR[self.match_id] = self.game.paddle_position.get(
             "paddle_r", (self.game.canvas_height - self.game.paddle_height) // 2
         )
+        self.c_player1_name[self.match_id] = self.game.player_1.name
+        self.c_player2_name[self.match_id] = self.game.player_2.name
         self.c_balldx[self.match_id] = self.game.ball_dx or 1
         self.c_balldy[self.match_id] = self.game.ball_dy or 0
         self.c_ball_speed[self.match_id] = self.game.ball_speed
@@ -610,6 +613,8 @@ class PongConsumer(AsyncWebsocketConsumer):
                         del self.c_current_game_id[self.match_id]
                         if self.match_id in self.c_match_winner:
                             del self.c_match_winner[self.match_id]
+                        del self.c_player1_name[self.match_id]
+                        del self.c_player2_name[self.match_id]
 
     @database_sync_to_async
     def get_winner_username(game, winner_id):
@@ -671,6 +676,8 @@ class PongConsumer(AsyncWebsocketConsumer):
                         "paddleR": self.c_paddleR.get(self.match_id, 0),
                         "scorePlayer1": self.c_scorep1.get(self.match_id, 0),
                         "scorePlayer2": self.c_scorep2.get(self.match_id, 0),
+                        "Player1_name": self.c_player1_name.get(self.match_id, 0),                        
+                        "Player2_name": self.c_player1_name.get(self.match_id, 0),
                     },
                 )
             except Exception as e:
@@ -705,6 +712,8 @@ class PongConsumer(AsyncWebsocketConsumer):
                         "paddleR": event["paddleR"],
                         "scorePlayer1": event["scorePlayer1"],
                         "scorePlayer2": event["scorePlayer2"],
+                        "Player1_name": event["Player1_name"],
+                        "Player2_name": event["Player2_name"],
                     }
                 )
             )

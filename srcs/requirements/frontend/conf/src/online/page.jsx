@@ -6,32 +6,32 @@ import InviteMatch from "./invite.jsx"
 import JoinMatch from "./join.jsx"
 import WaitMatch from "./wait.jsx"
 import PlayMatch from "./play.jsx"
-import { useNotification } from "../websockets/notification.jsx"
 import axiosInstance from "../auth/instance.jsx"
+import { useGame } from "../websockets/game.jsx"
+import ErrorModal from "../global/error-modal.jsx"
 
 function Online({ user }) {
 
 	const [state, setState] = useState("")
 	const [type, setType] = useState("")
-	const { setNotifMessages } = useNotification()
+	const { setUrl } = useGame()
+
+	const [show, setShow] = useState(false)
+	const hideModal = () => setShow(false)
+	const [info, setInfo] = useState("")
 
 	const fonction = async () => {
 		try {
 			const matchData = await axiosInstance.get(`/pong/matches/?player_id=${user.id}`)
 			const inviteData = await axiosInstance.get("/pong/invitations/")
-			const a = matchData.data
-				.filter(match => match.status == "En cours" && (match.player_1.name == user.name || match.player_2.name == user.name))
-			if (a.length) {
-				if (a[a.length - 1].player_1 != undefined && a[a.length - 1].player_2 != undefined &&
-					a[a.length - 1].player_1.name != undefined && a[a.length - 1].player_2.name != undefined) {
-					setNotifMessages({
-						type: "match_created",
-						player_1: a[a.length - 1].player_1.name,
-						player_2: a[a.length - 1].player_2.name,
-						ws_url: a[a.length - 1].url.ws_url})
-					if (a[a.length - 1].player_1.name == user.name) setType("paddle_l")
-					else if (a[a.length - 1].player_2.name == user.name) setType("paddle_r")
-					setState("wait")
+			const a = matchData.data.find(match => match.status == "En cours" && (match.player_1.name == user.name || match.player_2.name == user.name))
+			if (a) {
+				if (a.player_1 != undefined && a.player_2 != undefined &&
+					a.player_1.name != undefined && a.player_2.name != undefined) {		
+					if (a.player_1.name == user.name) setType("paddle_l")
+					else if (a.player_2.name == user.name) setType("paddle_r")
+					setUrl(a.url.ws_url)
+					setState("play")
 				}
 			}
 			const b = inviteData.data.find(invite => invite.status == "En attente" && invite.from_player.name == user.name)
@@ -40,7 +40,12 @@ function Online({ user }) {
 				setState("wait")
 			}
 		}
-		catch {}
+		catch(error) {
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	useEffect(() => {
@@ -64,12 +69,13 @@ function Online({ user }) {
 						</div>
 					</div>
 				</div> : <></>}
-				<InviteMatch state={ state } setState={ setState } setType={ setType }/>
-				<JoinMatch state={ state } setState={ setState } setType={ setType }/>
+				<InviteMatch state={ state } setState={ setState } setShow={ setShow } setInfo={ setInfo }/>
+				<JoinMatch state={ state } setState={ setState } setShow={ setShow } setInfo={ setInfo }/>
 				{state == "wait" ?
-				<WaitMatch setState={ setState }/> : <></>}
+				<WaitMatch setState={ setState } setShow={ setShow } setInfo={ setInfo }/> : <></>}
 				{state == "play" ?
 				<PlayMatch/> : <></>}
+				<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
 			</main>
 		</>
 	)

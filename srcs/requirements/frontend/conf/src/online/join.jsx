@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react"
 import { Modal, Button } from "react-bootstrap"
 import { useAuth } from "../auth/context"
 import axiosInstance from "../auth/instance"
+import { useNotification } from "../websockets/notification"
+import { useGame } from "../websockets/game"
 
-function JoinMatch({ state, setState, setType }) {
+function JoinMatch({ state, setState, setShow, setInfo }) {
 
 	const [data, setData] = useState(null)
+	const { NotifMessages, setNotifMessages } = useNotification()
+	const { setUrl } = useGame()
 	const { user } = useAuth()
 
 	const fonction = async () => {
@@ -22,16 +26,27 @@ function JoinMatch({ state, setState, setType }) {
 				.map(player => ({name: player.from_player.name, id: player.id, avatar: getAvatar(player.from_player.name)}))
 			setData(a)
 		}
-		catch {}
+		catch(error) {
+			setState("")
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const accept = async (id) => {
 		try {
 			await axiosInstance.put(`pong/invitations/${id}/accept/`)
-			setType("paddle_r")
 			setState("wait")
 		}
-		catch {setState("")}
+		catch(error) {
+			setState("")
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const decline = async (id) => {
@@ -39,8 +54,24 @@ function JoinMatch({ state, setState, setType }) {
 			await axiosInstance.put(`pong/invitations/${id}/decline/`)
 			setState("")
 		}
-		catch {setState("")}
+		catch(error) {
+			setState("")
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
+
+	useEffect(() => {
+		if (NotifMessages.type == "match_created") {
+			if (NotifMessages.player_1.name == user.name) setType("paddle_l")
+			else if (NotifMessages.player_2.name == user.name) setType("paddle_r")
+			setUrl(NotifMessages.ws_url)
+			setNotifMessages([])
+			setState("play")
+		}
+	}, [NotifMessages])
 
 	useEffect(() => {
 		fonction()

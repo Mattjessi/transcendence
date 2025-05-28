@@ -6,9 +6,9 @@ import createCanva from "./canva";
 const BGprivate = ({ state, type }) => {
 
 	const canva = useRef(null)
-	const { getSocket, PongMessages, ScoreMessages} = useGame()
+	const { getSocket, PongMessages} = useGame()
 	const { NotifMessages } = useNotification()
-	const [groupName, setGroupName] = useState({player1: "...", player2: "..."})
+	const [groupName, setGroupName] = useState({name1: "...", name2: "..."})
 	const [groupScore, setGroupScore] = useState({score1: "0", score2: "0"})
 
 	useEffect(() => {
@@ -41,7 +41,7 @@ const BGprivate = ({ state, type }) => {
 
 		const lastPongMessage = PongMessages[PongMessages.length - 1]
 	
-		const { dispose, renderer, camera } = createCanva(canva.current, state, lastPongMessage, groupName, groupScore, setGroupScore, ScoreMessages)
+		const { dispose, renderer, camera } = createCanva(canva.current, state, lastPongMessage, groupName, setGroupName, groupScore, setGroupScore)
 
 		window.addEventListener("resize", resizeCanva)
 		window.addEventListener('keydown', handleKeyDown)
@@ -55,31 +55,13 @@ const BGprivate = ({ state, type }) => {
 			window.removeEventListener('keyup', handleKeyUp)
 			dispose()
 		}
-	}, [ state, PongMessages, ScoreMessages, NotifMessages ])
-
-	useEffect(() => {
-		if (NotifMessages.type == "match_created")
-			setGroupName({player1: updateNames(NotifMessages.player_1, 1), player2: updateNames(NotifMessages.player_2, 2)})
-	}, [NotifMessages])
-
-	const updateNames = (string, types) => {
-		if (types === 1) {
-			if (string.length <= 8)
-				return string.padEnd(8, ' ')
-			return string.slice(0, 8) + '.'
-		}
-		else if (types === 2) {
-			if (string.length <= 8)
-				return string.padStart(8, ' ')
-			return string.slice(-8) + '.'
-		}
-		return '...'
-	}
+	}, [ state, PongMessages, NotifMessages ])
 
 	return (
-			<div className="position-fixed top-0">
-				<canvas ref={canva}/>
-			</div>)
+		<div className="position-fixed top-0">
+			<canvas ref={canva}/>
+		</div>
+	)
 }
 
 export default BGprivate
