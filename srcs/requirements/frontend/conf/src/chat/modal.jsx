@@ -6,6 +6,7 @@ import { useAuth } from "../auth/context"
 import { usePrivateChat } from "../websockets/privateChat.jsx"
 import { updateTime, updateSender, updateContent} from "./string.js"
 import axiosInstance from "../auth/instance.jsx"
+import ErrorModal from "../global/error-modal.jsx"
 
 function ChatModal({ chat, setChat }) {
 
@@ -18,48 +19,42 @@ function ChatModal({ chat, setChat }) {
 	const { privMessages } = usePrivateChat()
 	const bottomRefs = useRef([])
 
+	const [show, setShow] = useState(false)
+	const hideModal = () => setShow(false)
+	const [info, setInfo] = useState("")
+
 	const fonction = async () => {
 		try {
 			const a = await axiosInstance.get("/live_chat/general/messages/")
 			const b = await axiosInstance.get("/live_chat/private/list/")
-			const c = await axiosInstance.get('/users/api/friend/list/')
-			const d = c.data
-				.filter(c => c.player_1 == user.name)
+			const c = await axiosInstance.get('/users/api/player/')
+			const d = await axiosInstance.get('/users/api/block/list/')
+			const e = c.data
+				.filter(player => !d.data.some(block => block.blocked == player.name || block.blocker == player.name) &&
+					player.name != user.name)
+
 			const temp = []
 
-			temp.push({
-				lower : "general",
-				groupNAME: "General",
-				groupID: 0,
-				id: 0,
-				active: true,
-				data: a.data.data
-			})
+			temp.push({ lower : "general", realName: "", groupNAME: "General", groupID: 0, id: 0, active: true, data: a.data.data })
 
-			async function getId(friendname) {
-				try {
-					const e = await axiosInstance.get('/users/api/player/')
-					const player = e.data.find(e => e.name == friendname)
-					return player ? player.id : 0
-				}
-				catch {
-					handleClose()
-					return 0
-				}
-			}
-
-			for (let i = 0; i < d.length; i++) {
-				const groupNAME = d[i].player_2
-				const groupID = await getId(d[i].player_2)
-				const lower = d[i].player_2.toLowerCase()
+			for (let i = 0; i < e.length; i++) {
+				const realName = e[i].name
+				const groupNAME = updateSender(e[i].name)
+				const groupID = e[i].id
+				const lower = e[i].name.toLowerCase()
 				const id = i + 1
 				const data = b.data.data
-					.filter(b => b.sender_name == d[i].player_2 || b.receiver_name == d[i].player_2)
-				temp.push({lower: lower, groupNAME: groupNAME, groupID: groupID, id: id, active: false, data: data ? data : []})
+					.filter(b => b.sender_name == e[i].name || b.receiver_name == e[i].name)
+				temp.push({lower: lower, realName: realName, groupNAME: groupNAME, groupID: groupID, id: id, active: false, data: data ? data : []})
 			}
 			setChats(temp)
 		}
-		catch {handleClose()}
+		catch(error) {
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const invite = async (id, name) => {
@@ -74,9 +69,14 @@ function ChatModal({ chat, setChat }) {
 				max_score_per_round: 3,
 				match_type: "Normal"
 			})
-			await axiosInstance.post(`/live_chat/private/send/${id}/`, {content: `*${user.name} invited ${name} to an online game.*`})
+			await axiosInstance.post(`/live_chat/private/send/${id}/`, {content: `#${user.name} invited ${name} in a game.`})
 		}
-		catch {handleClose()}
+		catch(error) {
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const send = async (id) => {
@@ -86,7 +86,12 @@ function ChatModal({ chat, setChat }) {
 				await axiosInstance.post(`/live_chat/private/send/${id}/`, {content: message})
 			else
 				await axiosInstance.post("/live_chat/general/send/", {content: message})}
-		catch {handleClose()}
+		catch(error) {
+			if (error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 		finally {setMessage("")}
 	}
 
@@ -109,7 +114,7 @@ function ChatModal({ chat, setChat }) {
 		}
 	}, [chats])
 
-	const renderChatTab = (lower, active, groupID, groupNAME, id, data) => {
+	const renderChatTab = (lower, realName, active, groupID, groupNAME, id, data) => {
 		
 		if (!bottomRefs.current[id])
 			bottomRefs.current[id] = React.createRef()
@@ -123,9 +128,10 @@ function ChatModal({ chat, setChat }) {
    						{[...data].reverse().map((chatItem) => (
 							<p style={{ whiteSpace: "pre-wrap", fontFamily: "monospace", margin: 0 }} key={chatItem.timestamp + chatItem.sender_name}>
 								{"["}{updateTime(chatItem.timestamp)}{"] | "}
-								<a style={{ cursor: 'pointer' }}
-									onClick={() => navigateTo(`/profile/${chatItem.sender_name}`)}>{updateSender(chatItem.sender_name)}
-								</a>{" : "}{updateContent(chatItem.content)}
+								{chatItem.content.startsWith("#")
+									? (<span style={{ fontWeight: "bold", color: "#dc3545" }}>{updateSender("Sytem")}</span>)
+									: (<a style={{ cursor: 'pointer' }} onClick={() => navigateTo(`/profile/${chatItem.sender_name}`)}>{updateSender(chatItem.sender_name)}</a>)}{" : "}
+								{updateContent(chatItem.content)}
 							</p>
 						))}
 						<div ref={bottomRefs.current[id]} />
@@ -135,7 +141,7 @@ function ChatModal({ chat, setChat }) {
 							onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => {if (e.key === "Enter") {
 								e.preventDefault()
 								send(groupID)}}}/>
-						{id ? <button className="btn btn-primary" type="button" onClick={() => invite(groupID, groupNAME)}>Play</button> : <></>}
+						{id ? <button className="btn btn-primary" type="button" onClick={() => invite(groupID, realName)}>Play</button> : <></>}
 						<button className="btn btn-primary" type="button" onClick={() => send(groupID)}>Send</button>
 					</div>
 				</div>
@@ -163,10 +169,11 @@ function ChatModal({ chat, setChat }) {
 					</div>
 					<div className="tab-content flex-grow-1 w-100">
 					{chats.map((chatItem) => (
-						renderChatTab(chatItem.lower, chatItem.active, chatItem.groupID, chatItem.groupNAME, chatItem.id, chatItem.data)))}
+						renderChatTab(chatItem.lower, chatItem.realName, chatItem.active, chatItem.groupID, chatItem.groupNAME, chatItem.id, chatItem.data)))}
 					</div>
 				</div>
 			</Modal.Body>
+			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
 		</Modal>
 	)
 }

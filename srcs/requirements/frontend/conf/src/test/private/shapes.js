@@ -165,8 +165,8 @@ export const setNames = (groupName) => {
 	ctx.fillStyle = 'white'
 	ctx.textAlign = 'center'
 	ctx.textBaseline = 'middle'
-	const text = (groupName && groupName.player1 && groupName.player2
-		? `${groupName.player1} vs ${groupName.player2}`
+	const text = (groupName && groupName.name1 && groupName.name2
+		? `${groupName.name1} vs ${groupName.name2}`
 		: "...   vs   ...")
 	ctx.fillText(text, canvas.width / 2, canvas.height / 2)
 	const texture = new THREE.Texture(canvas)
@@ -180,4 +180,27 @@ export const setNames = (groupName) => {
 	textMesh.position.set(35, 30, 14)
 	textMesh.rotateX(Math.PI / 2)
 	return (textMesh)
+}
+
+export const updateName = (newName, scene, objects) => {
+	//const newNameMesh = setNames(updateNames(newName))
+	const newNameMesh = setNames(newName)
+	objects.names.geometry.dispose()
+	objects.names.material.dispose()
+	scene.remove(objects.names)
+	scene.add(newNameMesh)
+	objects.score = newNameMesh
+}
+
+const updateNames = ({ name1, name2 }) => {
+	const formatName = (name, isFirst) => {
+		if (name.length <= 8)
+			return isFirst ? name.padEnd(8, ' ') : name.padStart(8, ' ')
+		return isFirst ? name.slice(0, 8) + '.' : name.slice(-8) + '.'
+	}
+
+	return {
+		player1: formatName(name1, true),
+		player2: formatName(name2, false)
+	}
 }

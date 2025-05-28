@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { setFloor, setFog, setLine, setBorder, setBScreen, setLight, setPaddle, setWall, setBall, setScore, setNames, updateScore } from './shapes'
+import { setFloor, setFog, setLine, setBorder, setBScreen, setLight, setPaddle, setWall, setBall, setScore, setNames, updateScore, updateName } from './shapes'
 
 const setAll = (scene, state, groupName, groupScore) => {
 
@@ -23,7 +23,7 @@ const setAll = (scene, state, groupName, groupScore) => {
 	return {floor, fog, light, paddle, wall, ball, border, bscreen, names, score}
 }
 
-const createCanva = (canva, state, lastPongMessage, groupName, groupScore, setGroupScore, ScoreMessages) => {
+const createCanva = (canva, state, lastPongMessage, groupName, setGroupName, groupScore, setGroupScore) => {
 	
 	const scene = new THREE.Scene()
 
@@ -44,15 +44,22 @@ const createCanva = (canva, state, lastPongMessage, groupName, groupScore, setGr
 
 	const animate = () => {
 		if (state == "play" || state == "playfinal") {
-			if (groupScore && ScoreMessages && ScoreMessages.scorePlayer1 != undefined && ScoreMessages.scorePlayer2 != undefined &&
-				(ScoreMessages.scorePlayer1 != groupScore.score1 || ScoreMessages.scorePlayer2 != groupScore.score2)) {
-				updateScore({score1: ScoreMessages.scorePlayer1 != undefined ? ScoreMessages.scorePlayer1 : 0,
-							score2: ScoreMessages.scorePlayer2 != undefined ? ScoreMessages.scorePlayer2 : 0},
+			if (groupScore && lastPongMessage && lastPongMessage.scorePlayer1 != undefined && lastPongMessage.scorePlayer2 != undefined &&
+				(lastPongMessage.scorePlayer1 != groupScore.score1 || lastPongMessage.scorePlayer2 != groupScore.score2)) {
+				updateScore({score1: lastPongMessage.scorePlayer1 != undefined ? lastPongMessage.scorePlayer1 : 0,
+							score2: lastPongMessage.scorePlayer2 != undefined ? lastPongMessage.scorePlayer2 : 0},
 							scene, objects)
-				setGroupScore({score1: ScoreMessages.scorePlayer1 != undefined ? ScoreMessages.scorePlayer1 : 0,
-							score2: ScoreMessages.scorePlayer2 != undefined ? ScoreMessages.scorePlayer2 : 0})
+				setGroupScore({score1: lastPongMessage.scorePlayer1 != undefined ? lastPongMessage.scorePlayer1 : 0,
+							score2: lastPongMessage.scorePlayer2 != undefined ? lastPongMessage.scorePlayer2 : 0})
 			}
-		
+			if (groupName && lastPongMessage && lastPongMessage.Player1_name != undefined && lastPongMessage.Player2_name != undefined &&
+				(lastPongMessage.Player1_name != groupName.name1 || lastPongMessage.Player2_name != groupName.name2)) {
+				updateName({name1: lastPongMessage.Player1_name != undefined ? lastPongMessage.Player1_name : "...",
+							name2: lastPongMessage.Player2_name != undefined ? lastPongMessage.Player2_name : "..."},
+							scene, objects)
+				setGroupName({name1: lastPongMessage.Player1_name != undefined ? lastPongMessage.Player1_name : "...",
+							name2: lastPongMessage.Player2_name != undefined ? lastPongMessage.Player2_name : "..."})
+			}
 			objects.paddle.paddleL.position.set(0.5, lastPongMessage ? (lastPongMessage.paddleL + 2.5) : 17.5, 1)
 			objects.paddle.paddleR.position.set(70.5, lastPongMessage ? (lastPongMessage.paddleR + 2.5) : 17.5, 1)
 			objects.ball.position.set(lastPongMessage ? (lastPongMessage.x + 0.5) : 35.5, lastPongMessage ? (lastPongMessage.y + 0.5) : 15.5, 1)
