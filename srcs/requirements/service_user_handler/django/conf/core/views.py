@@ -145,13 +145,12 @@ class PlayerLogout_api(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        if hasattr(request.user, 'player_profile'):
-            player = request.user.player_profile
-            player.online = False
-            player.last_seen = timezone.now()
-            player.save()
+        player = serializer.validated_data['player']
+        player.online = False
+        player.last_seen = timezone.now()
+        player.save()
         return Response({"code": 1000}, status=status.HTTP_200_OK)
 # ============CRUD FriendShip================
 
