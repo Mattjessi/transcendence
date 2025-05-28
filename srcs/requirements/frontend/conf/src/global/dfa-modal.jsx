@@ -21,7 +21,7 @@ function DFAModal({ show, hide, handleClose }) {
 				setQrCode(response.data.qr_code_image)
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShowErr(true)
 			}
@@ -38,7 +38,7 @@ function DFAModal({ show, hide, handleClose }) {
 			}
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}

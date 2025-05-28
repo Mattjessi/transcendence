@@ -27,7 +27,7 @@ function BlockModal({ tab, setShow, setInfo }) {
 			setFilteredFriends(a)
 		}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}
@@ -37,7 +37,7 @@ function BlockModal({ tab, setShow, setInfo }) {
 	const removeBlock = async (playerID) => {
 		try {await axiosInstance.delete(`/users/api/block/remove/${playerID}/`)}
 		catch(error) {
-			if (error.response.data.message) {
+			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
 				setShow(true)
 			}

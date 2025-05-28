@@ -36,17 +36,19 @@ function Tournament({ user }) {
 			}
 			const b = matchData.data
 				.find(match => match.status == "En cours" && match.type == "Tournois")
-			console.log(matchData)
-			console.log(b)
 			if (b) {
-				console.log(b)
 				if (b.player_1.name == user.name) setType("paddle_l")
 				else if (b.player_2.name == user.name) setType("paddle_r")
 				setUrl(b.url.ws_url)
 				setState("play")
 			}
 		}
-		catch {}
+		catch {
+			if (error && error.response && error.response.data && error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	const create = async () => {
@@ -59,11 +61,15 @@ function Tournament({ user }) {
 			setNotifMessages({type: "tournament_created"})
 			setState("wait")
 		}
-		catch(error) {console.log(error)}
+		catch(error) {
+			if (error && error.response && error.response.data && error.response.data.message) {
+				setInfo(error.response.data.message)
+				setShow(true)
+			}
+		}
 	}
 
 	useEffect(() => {
-		console.log(state)
 		if (state == "")
 			fonction()
 	}, [state])
