@@ -173,7 +173,7 @@ function ChatModal({ chat, setChat }) {
 					</div>
 				</div>
 			</Modal.Body>
-			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
+			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 2 } info={ info } />
 		</Modal>
 	)
 }

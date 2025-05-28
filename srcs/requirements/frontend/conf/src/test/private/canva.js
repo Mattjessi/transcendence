@@ -15,7 +15,7 @@ const setAll = (scene, state, groupName, groupScore) => {
 	const names = setNames(groupName)
 	const score = setScore(groupScore)
 
-	if (state == "play" || state == "playfinal") {
+	if (state == "play") {
 		//line.cubes.forEach(cube => scene.add(cube))
 		scene.add(paddle.paddleL, paddle.paddleR, wall.wallL, wall.wallR, ball, names)
 		scene.add(border, bscreen.bscreen1, bscreen.bscreen2, bscreen.bscreen3, score)
@@ -43,7 +43,7 @@ const createCanva = (canva, state, lastPongMessage, groupName, setGroupName, gro
 	let animationFrameId
 
 	const animate = () => {
-		if (state == "play" || state == "playfinal") {
+		if (state == "play") {
 			if (groupScore && lastPongMessage && lastPongMessage.scorePlayer1 != undefined && lastPongMessage.scorePlayer2 != undefined &&
 				(lastPongMessage.scorePlayer1 != groupScore.score1 || lastPongMessage.scorePlayer2 != groupScore.score2)) {
 				updateScore({score1: lastPongMessage.scorePlayer1 != undefined ? lastPongMessage.scorePlayer1 : 0,

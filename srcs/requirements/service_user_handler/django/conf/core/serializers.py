@@ -113,7 +113,7 @@ class PlayerRegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError({"code": 1012, "message": "The username must not contain spaces."}) # Le nom d'utilisateur ne doit pas contenir d'espaces.
         if not re.match(r'^[a-zA-Z0-9]+$', value):
             raise serializers.ValidationError({"code": 1013, "message": "The username must only contain letters and numbers."}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
-        return value or ""
+        return value or None
 
     def validate(self, data):
         username = data['username']
@@ -151,12 +151,19 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ['online', 'description', 'avatar']
+
+    def validate_description(self, value):
+        if len(value) > 20:
+            raise serializers.ValidationError({"code": 1011, "message": "The username must not exceed 20 characters."}) # Le nom d'utilisateur ne doit pas dépasser 20 caractères.
+        if not re.match(r'^[a-zA-Z0-9]+$', value):
+            raise serializers.ValidationError({"code": 1013, "message": "The username must only contain letters and numbers."}) # Le nom d'utilisateur ne doit contenir que des lettres et des chiffres.
+        return value or None
     
     def validate(self, data):
         # Vérification de l'utilisateur authentifié
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError({"code": 1030, "message": "User not authenticated"})
+            raise serializers.	ValidationError({"code": 1030, "message": "User not authenticated"})
 
         # Vérification que l'instance appartient à l'utilisateur
         instance = self.instance

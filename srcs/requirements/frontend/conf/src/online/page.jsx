@@ -23,8 +23,10 @@ function Online({ user }) {
 	const fonction = async () => {
 		try {
 			const matchData = await axiosInstance.get(`/pong/matches/?player_id=${user.id}`)
+			console.log(matchData)
 			const inviteData = await axiosInstance.get("/pong/invitations/")
-			const a = matchData.data.find(match => match.status == "En cours" && (match.player_1.name == user.name || match.player_2.name == user.name))
+			const a = matchData.data.find(match => (match.player_1.name == user.name || match.player_2.name == user.name) &&
+				match.status == "En cours" && match.tournament == null)
 			if (a) {
 				if (a.player_1 != undefined && a.player_2 != undefined &&
 					a.player_1.name != undefined && a.player_2.name != undefined) {		
@@ -75,7 +77,7 @@ function Online({ user }) {
 				<WaitMatch setState={ setState } setShow={ setShow } setInfo={ setInfo }/> : <></>}
 				{state == "play" ?
 				<PlayMatch/> : <></>}
-				<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
+				<ErrorModal show={ show } hideModal={ hideModal } contextId={ 5 } info={ info } />
 			</main>
 		</>
 	)

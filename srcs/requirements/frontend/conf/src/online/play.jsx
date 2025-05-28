@@ -41,7 +41,7 @@ function WinnerModal({ winnerName, show, onClose }) {
 function PlayMatch() {
 
 	const { getSocket, closeSocket, messages } = useGame()
-	const { setMessages, setPongMessages, setScoreMessages } = useGame()
+	const { setMessages, setPongMessages } = useGame()
 	const { setNotifMessages } = useNotification()
 	const [paused, setPaused] = useState(false)
 	const { user } = useAuth()
@@ -56,10 +56,11 @@ function PlayMatch() {
 	useEffect(() => {
 		if (!messages.length) return
 		const lastMessage = messages[messages.length - 1]
+		console.log(lastMessage)
 		if (lastMessage.type == "game_resumed")
 			setNotifMessages(lastMessage)
 		if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
-			closeSocket()
+			//closeSocket()
 			if (lastMessage.type == "match_ended")
 				setWinner(lastMessage.winner)
 			else
@@ -68,13 +69,11 @@ function PlayMatch() {
 			setEnd(true)
 			setMessages([])
 			setPongMessages([])
-			setScoreMessages([])
 		}
 		if (lastMessage.type == "game_paused" || (lastMessage.type == "player_count" && lastMessage.player_count == 1))
 			setPaused(true)
-		if (lastMessage.type == "forfeit_not_available") {
+		if (lastMessage.type == "forfeit_not_available")
 			setTimer(lastMessage.remaining_seconds)
-		}
 		if (lastMessage.type == "player_count" && lastMessage.player_count == 2) {
 			setPaused(false)
 			setTimer(60)
