@@ -77,7 +77,8 @@ function SettingsModal({ settings, setSettings }) {
 	const removeProfile = async (password) => {
 		try {
 			const response = await axiosInstance.put(`/users/api/player/delete/`, {password: password})
-			logout()
+			if (response.data.code == 1000)
+				logout()
 		}
 		catch(error) {
 			if (error.response.data.message) {
@@ -211,7 +212,7 @@ function SettingsModal({ settings, setSettings }) {
 				</div>
 			</Modal.Body>
 			<DFAModal show={ dfaShow } hide={ hideDFA } handleClose={ handleClose }/>
-			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
+			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 4 } info={ info } />
 		</Modal>
 	)
 }

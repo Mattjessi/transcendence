@@ -133,7 +133,7 @@ function Profile({ user, profile }) {
 					</div>
 				</div>
 			</div>
-			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
+			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 6 } info={ info } />
 		</div>
 	)
 }

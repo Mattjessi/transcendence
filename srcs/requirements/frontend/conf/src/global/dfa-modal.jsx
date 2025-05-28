@@ -69,7 +69,7 @@ function DFAModal({ show, hide, handleClose }) {
 						onClick={() => fonction2(code)}>Confirm</Button>
 				</div>
 			</Modal.Body>
-			<ErrorModal show={ showErr } hideModal={ hideModal } contextId={ 0 } info={ info } />
+			<ErrorModal show={ showErr } hideModal={ hideModal } contextId={ 4 } info={ info } />
 		</Modal>
 	)
 }

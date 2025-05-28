@@ -47,7 +47,8 @@ function BlockModal({ tab, setShow, setInfo }) {
 
 	const filterList = (e) => {
 		const query = e.target.value
-		setSearch(query)	
+		setSearch(query)
+		if (!data) return
 		const filtered = data.filter(player =>player.name.toLowerCase().includes(query.toLowerCase()))
 		setFilteredFriends(filtered)
 	}

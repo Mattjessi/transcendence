@@ -85,7 +85,7 @@ function ProfileEdit({ user }) {
 			<Button className="rounded-0 btn btn-dark fw-bolder" onClick={() => updateInfo("reset")}>
                 Reset Avatar
             </Button>
-			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 0 } info={ info } />
+			<ErrorModal show={ show } hideModal={ hideModal } contextId={ 6 } info={ info } />
 		</>
 	)
 }

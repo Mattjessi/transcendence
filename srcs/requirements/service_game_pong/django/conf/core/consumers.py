@@ -456,9 +456,15 @@ class PongConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        # Vérifier le nombre de joueurs connectés
         if self.match_id not in self.c_players:
             self.c_players[self.match_id] = set()
+
+        # Vérifier que le joueur n est pas deja co
+        if self.player_id in self.c_players[self.match_id]:
+            await self.close()
+            return
+
+        # Vérifier le nombre de joueurs connectés
         if len(self.c_players[self.match_id]) >= 2:
             await self.close()
             return
@@ -615,6 +621,7 @@ class PongConsumer(AsyncWebsocketConsumer):
                             del self.c_match_winner[self.match_id]
                         del self.c_player1_name[self.match_id]
                         del self.c_player2_name[self.match_id]
+        await self.close()
 
     @database_sync_to_async
     def get_winner_username(game, winner_id):
@@ -677,7 +684,7 @@ class PongConsumer(AsyncWebsocketConsumer):
                         "scorePlayer1": self.c_scorep1.get(self.match_id, 0),
                         "scorePlayer2": self.c_scorep2.get(self.match_id, 0),
                         "Player1_name": self.c_player1_name.get(self.match_id, 0),                        
-                        "Player2_name": self.c_player1_name.get(self.match_id, 0),
+                        "Player2_name": self.c_player2_name.get(self.match_id, 0),
                     },
                 )
             except Exception as e:
@@ -933,7 +940,8 @@ class PongConsumer(AsyncWebsocketConsumer):
                     text_data=json.dumps(
                         {
                             "type": "forfeit_success",
-                            "message": "Vous avez été déclaré vainqueur par forfait",
+                            "winner": self.c_match_winner.get(self.match_id, None),
+                            "match_number": self.match.match_number if self.match else 0,
                         }
                     )
                 )

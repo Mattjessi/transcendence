@@ -13,7 +13,7 @@ const BGprivate = ({ state, type }) => {
 
 	useEffect(() => {
 		if (!canva.current) return
-		if (state != "play" && state != "playfinal") canva.current.style.filter = 'blur(5px)'
+		if (state != "play") canva.current.style.filter = 'blur(5px)'
 		else canva.current.style.filter = ""
 		const handleKeyDown = (e) => {
 			const socket = getSocket()
@@ -56,6 +56,14 @@ const BGprivate = ({ state, type }) => {
 			dispose()
 		}
 	}, [ state, PongMessages, NotifMessages ])
+
+	useEffect(() => {
+		if (NotifMessages.type == "match_created") {
+			console.log("in private", NotifMessages)
+			setGroupName({name1: "...", name2: "..."})
+			setGroupScore({score1: "0", score2: "0"})
+		}
+	}, [NotifMessages])
 
 	return (
 		<div className="position-fixed top-0">
