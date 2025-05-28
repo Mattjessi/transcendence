@@ -744,11 +744,11 @@ class Disable2FASerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        password = data.get('password')
         user = self.context['request'].user
         if not user.is_authenticated:
             raise serializers.ValidationError({"code": 1030, "message": "Unauthenticated user"})  # Utilisateur non authentifié
 
+        password = data.get('password')
         if not password:
             raise serializers.ValidationError({"code": 1010, "message": "Password required."}) # Mot de passe requis.
         if not user.check_password(password):
@@ -766,8 +766,7 @@ class Disable2FASerializer(serializers.Serializer):
         return player
 
     def to_representation(self, instance):
-        print('test')
-        return {"code": 1000,}
+        return {"code": 1000}
 
 
 #===OAUTH====
