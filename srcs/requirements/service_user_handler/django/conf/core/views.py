@@ -308,7 +308,7 @@ class Enable2FAView(generics.UpdateAPIView):
         try:
             return self.request.user.player_profile
         except AttributeError:
-            return Response({"code": 1043, "message": "No associated player profile"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"code": 1043, "message": "Aucun profil joueur associé"}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
