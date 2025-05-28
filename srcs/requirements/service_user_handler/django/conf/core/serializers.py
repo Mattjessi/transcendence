@@ -166,7 +166,7 @@ class PlayerUpdateInfoSerializer(serializers.ModelSerializer):
 
         description = data.get('description')
         if description:
-            if len(username) > 20:
+            if len(description) > 20:
                 raise serializers.ValidationError({"code": 1011, "message": "The description must not exceed 20 characters."}) # La description ne doit pas dépasser 20 caractères.
         
         # Validation de l'image
