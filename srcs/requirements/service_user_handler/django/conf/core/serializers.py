@@ -539,19 +539,27 @@ class SendFriendRequestSerializer(serializers.ModelSerializer):
 
 
 class FriendRequestAcceptSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)  # Champ pour recevoir l'id dans la requête
+
     class Meta:
         model = Friendship
-        fields = []
+        fields = ['id']
 
     def validate(self, data):
-        friendship = self.instance
+        try:
+            friendship = Friendship.objects.get(id=data['id'])
+        except Friendship.DoesNotExist:
+            raise serializers.ValidationError({"code": 1022, "message": "Friendship request does not exist"})
+
         request_user = self.context['request'].user
 
         if friendship.player_2.user != request_user:
-            raise serializers.ValidationError({"code": 1020, "message": "You can't accept this request"})  # "Seul le destinataire peut accepter cette demande."
+            raise serializers.ValidationError({"code": 1020, "message": "Only the recipient can reject this request"})
         if friendship.status != 'pending':
-            raise serializers.ValidationError({"code": 1021, "message": "Request has already been processed"})  # "Cette demande a déjà été traitée."
+            raise serializers.ValidationError({"code": 1021, "message": "Request has already been processed"})
 
+        # Stocker l'instance dans le contexte pour la méthode update
+        self.instance = friendship
         return data
 
     def update(self, instance, validated_data):
@@ -565,44 +573,90 @@ class FriendRequestAcceptSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        return {"code": 1000} 
+        return {"code": 1000}
 
 class FriendRequestRejectSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Friendship
-        fields = []
+        fields = ['id']
 
     def validate(self, data):
-        friendship = self.instance
+        try:
+            friendship = Friendship.objects.get(id=data['id'])
+        except Friendship.DoesNotExist:
+            raise serializers.ValidationError({"code": 1022, "message": "Friendship request does not exist"})  # "Cette demande d'amitié n'existe pas."
+
         request_user = self.context['request'].user
+
         if friendship.player_2.user != request_user:
-            raise serializers.ValidationError({"code": 1020, "message": "Only the recipient can reject this request."})
+            raise serializers.ValidationError({"code": 1020, "message": "Only the recipient can reject this request"})  # "Seul le destinataire peut rejeter cette demande."
         if friendship.status != 'pending':
-            raise serializers.ValidationError({"code": 1021, "message": "Request has already been processed"})
+            raise serializers.ValidationError({"code": 1021, "message": "Request has already been processed"})  # "Cette demande a déjà été traitée."
+
+        # Stocker l'instance pour la suppression
+        self.instance = friendship
         return data
 
     def to_representation(self, instance):
         return {"code": 1000}
+    
 
 class FriendRequestCancelSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Friendship
-        fields = []
-
-    def to_representation(self, instance):
-        return {"code": 1000}
-
-
-class FriendshipRemoveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Friendship
-        fields = []
+        fields = ['id']
 
     def validate(self, data):
+        try:
+            friendship = Friendship.objects.get(id=data['id'])
+        except Friendship.DoesNotExist:
+            raise serializers.ValidationError({"code": 1022, "message": "Friendship request does not exist"})  # "Cette demande d'amitié n'existe pas."
+
+        request_user = self.context['request'].user
+
+        if friendship.player_1.user != request_user:
+            raise serializers.ValidationError({"code": 1023, "message": "Only the sender can cancel this request"})  # "Seul l'expéditeur peut annuler cette demande."
+        if friendship.status != 'pending':
+            raise serializers.ValidationError({"code": 1021, "message": "This request has already been processed"})  # "Cette demande a déjà été traitée."
+
+        # Stocker l'instance pour la suppression
+        self.instance = friendship
         return data
 
     def to_representation(self, instance):
-        return {"code": 1000} 
+        return {"code": 1000}
+    
+
+class FriendshipRemoveSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)  # Champ pour recevoir l'id dans la requête
+
+    class Meta:
+        model = Friendship
+        fields = ['id']
+
+    def validate(self, data):
+        try:
+            friendship = Friendship.objects.get(id=data['id'])
+        except Friendship.DoesNotExist:
+            raise serializers.ValidationError({"code": 1022, "message": "Friendship does not exist"})  # "Cette amitié n'existe pas."
+
+        player = self.context['request'].user.player_profile
+
+        if friendship.status != 'accepted':
+            raise serializers.ValidationError({"code": 1030, "message": "This relationship is not an accepted friendship"})  # "Cette relation n'est pas une amitié acceptée."
+        if friendship.player_1 != player and friendship.player_2 != player:
+            raise serializers.ValidationError({"code": 1025, "message": "You are not friends with this player"})  # "Vous n'êtes pas amis avec ce joueur."
+
+        # Stocker l'instance pour la suppression
+        self.instance = friendship
+        return data
+
+    def to_representation(self, instance):
+        return {"code": 1000}
 
 class FriendshipListSerializer(serializers.ModelSerializer):
     player_1 = serializers.CharField(source='player_1.name', read_only=True)
@@ -659,9 +713,26 @@ class BlockPlayerSerializer(serializers.ModelSerializer):
         return {"code": 1000}
 
 class UnblockPlayerSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True) 
+
     class Meta:
         model = Block
-        fields = []
+        fields = ['id']
+
+    def validate(self, data):
+        try:
+            block = Block.objects.get(id=data['id'])
+        except Block.DoesNotExist:
+            raise serializers.ValidationError({"code": 1022, "message": "Block does not exist"})  # "Ce blocage n'existe pas."
+
+        blocker = self.context['request'].user.player_profile
+
+        if block.blocker != blocker:
+            raise serializers.ValidationError({"code": 1028, "message": "You have not blocked this player"})  # "Vous n'avez pas bloqué ce joueur."
+
+        # Stocker l'instance pour la suppression
+        self.instance = block
+        return data
 
     def to_representation(self, instance):
         return {"code": 1000}

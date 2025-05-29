@@ -640,7 +640,7 @@ class PongConsumer(AsyncWebsocketConsumer):
                 self.c_status.get(self.match_id) != StatusChoices.EN_COURS
                 or len(self.c_players.get(self.match_id, set())) != 2
             ):
-                self.game = await self.get_active_game(self.match_id)
+#TEST                self.game = await self.get_active_game(self.match_id)
                 if not self.game:
                     break
                 if len(self.c_players.get(self.match_id, set())) != 2:
@@ -657,7 +657,6 @@ class PongConsumer(AsyncWebsocketConsumer):
                     elif self.c_scorep2[self.match_id] >= self.game.max_score:
                         winner_id = self.game.player_2_id
 
-                    # Utiliser la nouvelle méthode pour gérer la fin du jeu
                     await self.handle_game_end(self.game, winner_id)
                     break
             except Exception as e:
@@ -667,8 +666,8 @@ class PongConsumer(AsyncWebsocketConsumer):
 
     async def send_periodic_data(self):
         while self.running:
-            if self.c_status.get(self.match_id) != StatusChoices.EN_COURS:
-                self.game = await self.get_active_game(self.match_id)
+#TEST            if self.c_status.get(self.match_id) != StatusChoices.EN_COURS:
+#TEST                self.game = await self.get_active_game(self.match_id)
                 if not self.game:
                     await self.handle_match_end()
                     return
