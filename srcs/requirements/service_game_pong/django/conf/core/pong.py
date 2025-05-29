@@ -2,13 +2,15 @@ import random
 from channels.db import database_sync_to_async
 from core.models import Game, StatusChoices
 import math
+import time
 
 @database_sync_to_async
 def get_game(game_id):
     return Game.objects.get(id=game_id)
 
 async def game_pong(game_id, consumer):
-    game = await get_game(game_id)
+    #game = await get_game(game_id)
+    game = consumer.game
     
     # Utiliser les variables temporaires du consumer
     ball_x = consumer.c_ballx.get(consumer.match_id, game.canvas_width // 2)
@@ -29,12 +31,21 @@ async def game_pong(game_id, consumer):
     PADDLE_HEIGHT = game.paddle_height
     BALL_RADIUS = game.ball_radius
 
+    # Calculer le delta de temps
+    current_time = time.time()
+    last_time = consumer.c_last_time.get(consumer.match_id, current_time)
+    dt = min(max(current_time - last_time, 0.01), 0.1)
+    consumer.c_last_time[consumer.match_id] = current_time
+
+    # Ajuster la vitesse de la balle en fonction du temps écoulé
+    adjusted_speed = ball_speed * dt * 60  # Normalisé pour 60 FPS
+
     # Mettre à jour la position de la balle
-    ball_x += ball_dx * ball_speed
-    ball_y += ball_dy * ball_speed
+    ball_x += ball_dx * adjusted_speed
+    ball_y += ball_dy * adjusted_speed
 
     # Collision avec les bords supérieur et inférieur
-    if ball_y <= BALL_RADIUS or ball_y >= CANVAS_HEIGHT - BALL_RADIUS:
+    if ball_y <= BALL_RADIUS and ball_dy < 0:
         ball_dy = -ball_dy
         # Légère variation aléatoire sur l'angle de rebond horizontal
         variation = random.uniform(-0.1, 0.1)
@@ -43,8 +54,22 @@ async def game_pong(game_id, consumer):
             ball_dx += variation
         # Normaliser le vecteur pour maintenir la vitesse constante
         length = math.sqrt(ball_dx**2 + ball_dy**2)
-        ball_dx /= length
-        ball_dy /= length
+        if length > 0:
+            ball_dx /= length
+            ball_dy /= length
+            
+    if ball_y >= CANVAS_HEIGHT - BALL_RADIUS and ball_dy > 0:
+        ball_dy = -ball_dy
+        # Légère variation aléatoire sur l'angle de rebond horizontal
+        variation = random.uniform(-0.1, 0.1)
+        # S'assurer que ball_dx ne devient pas trop petit
+        if abs(ball_dx + variation) > 0.2:
+            ball_dx += variation
+        # Normaliser le vecteur pour maintenir la vitesse constante
+        length = math.sqrt(ball_dx**2 + ball_dy**2)
+        if length > 0:
+            ball_dx /= length
+            ball_dy /= length
 
     # Collision avec les raquettes
     if (ball_x <= PADDLE_WIDTH + BALL_RADIUS and

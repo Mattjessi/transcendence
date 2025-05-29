@@ -43,7 +43,6 @@ function PlayMatch({ setState, setType }) {
 
 	const { getSocket, closeSocket, messages } = useGame()
 	const { setMessages, setPongMessages } = useGame()
-	const { NotifMessages } = useNotification()
 	const { user } = useAuth()
 	const [paused, setPaused] = useState(false)
 	const [end, setEnd] = useState(false)
@@ -77,7 +76,7 @@ function PlayMatch({ setState, setType }) {
 
 		const handleMessage = async () => {
 			if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
-				//closeSocket()
+				closeSocket()
 				if (lastMessage.type == "match_ended") {
 					setWinner(lastMessage.winner)
 					if (lastMessage.winner == user.name && lastMessage.match_number == 2)

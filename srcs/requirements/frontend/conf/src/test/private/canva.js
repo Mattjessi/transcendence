@@ -101,6 +101,17 @@ const createCanva = (canva, state, lastPongMessage, groupName, setGroupName, gro
 			objects.border.material.dispose()
 			scene.remove(objects.border)
 		}
+		if (objects.bscreen) {
+			objects.bscreen.bscreen1.geometry.dispose()
+			objects.bscreen.bscreen1.material.dispose()
+			scene.remove(objects.bscreen.bscreen1)
+			objects.bscreen.bscreen2.geometry.dispose()
+			objects.bscreen.bscreen2.material.dispose()
+			scene.remove(objects.bscreen.bscreen2)
+			objects.bscreen.bscreen3.geometry.dispose()
+			objects.bscreen.bscreen3.material.dispose()
+			scene.remove(objects.bscreen.bscreen3)
+		}
 		if (objects.paddle) {
 			if (objects.paddle.paddleL) {
 				objects.paddle.paddleL.geometry.dispose()
@@ -129,6 +140,18 @@ const createCanva = (canva, state, lastPongMessage, groupName, setGroupName, gro
 			objects.ball.geometry.dispose()
 			objects.ball.material.dispose()
 			scene.remove(objects.ball)
+		}
+		if (objects.score) {
+			objects.score.geometry.dispose()
+			objects.score.material.map.dispose()
+			objects.score.material.dispose()
+			scene.remove(objects.score)
+		}
+		if (objects.names) {
+			objects.names.geometry.dispose()
+			objects.names.material.map.dispose()
+			objects.names.material.dispose()
+			scene.remove(objects.names)
 		}
 		scene.fog = null
 		scene.background = null

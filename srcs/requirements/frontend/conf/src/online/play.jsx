@@ -59,7 +59,7 @@ function PlayMatch() {
 		if (lastMessage.type == "game_resumed")
 			setNotifMessages(lastMessage)
 		if (lastMessage.type == "match_ended" || lastMessage.type == "forfeit_success") {
-			//closeSocket()
+			closeSocket()
 			if (lastMessage.type == "match_ended")
 				setWinner(lastMessage.winner)
 			else

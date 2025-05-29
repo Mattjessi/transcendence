@@ -6,7 +6,7 @@ import createCanva from "./canva";
 const BGprivate = ({ state, type }) => {
 
 	const canva = useRef(null)
-	const { getSocket, PongMessages} = useGame()
+	const { getSocket, PongMessages, closeSocket } = useGame()
 	const { NotifMessages } = useNotification()
 	const [groupName, setGroupName] = useState({name1: "...", name2: "..."})
 	const [groupScore, setGroupScore] = useState({score1: "0", score2: "0"})
@@ -54,6 +54,7 @@ const BGprivate = ({ state, type }) => {
 			window.removeEventListener('keydown', handleKeyDown)
 			window.removeEventListener('keyup', handleKeyUp)
 			dispose()
+			//closeSocket()
 		}
 	}, [ state, PongMessages, NotifMessages ])
 

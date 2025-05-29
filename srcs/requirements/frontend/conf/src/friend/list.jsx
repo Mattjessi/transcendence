@@ -43,7 +43,8 @@ function ListModal({ tab, setShow, setInfo }) {
 	}
 
 	const removeFriend = async (playerID) => {
-		try {await axiosInstance.delete(`/users/api/friend/remove/${playerID}/`)}
+		const json = {data: {"id": playerID}}
+		try {await axiosInstance.delete(`/users/api/friend/remove/`, json)}
 		catch(error) {
 			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
