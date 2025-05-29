@@ -40,7 +40,8 @@ function RequestModal({ tab, setShow, setInfo }) {
 	}
 
 	const cancelRequest = async (playerID) => {
-		try {await axiosInstance.delete(`/users/api/friend-request/cancel/${playerID}/`)}
+		const json = {data: {"id": playerID}}
+		try {await axiosInstance.delete(`/users/api/friend-request/cancel/`, json)}
 		catch(error) {
 			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
@@ -51,7 +52,7 @@ function RequestModal({ tab, setShow, setInfo }) {
 	}
 
 	const acceptRequest = async (playerID) => {
-		try {await axiosInstance.put(`/users/api/friend-request/accept/${playerID}/`, { player_2: playerID })}
+		try {await axiosInstance.put(`/users/api/friend-request/accept/`, { id: playerID })}
 		catch(error) {
 			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
@@ -62,7 +63,8 @@ function RequestModal({ tab, setShow, setInfo }) {
 	}
 
 	const rejectRequest = async (playerID) => {
-		try {await axiosInstance.delete(`/users/api/friend-request/reject/${playerID}/`)}
+		const json = {data: {"id": playerID}}
+		try {await axiosInstance.delete(`/users/api/friend-request/reject/`, json)}
 		catch(error) {
 			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)

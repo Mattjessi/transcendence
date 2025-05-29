@@ -189,7 +189,7 @@ export const updateName = (newName, scene, objects) => {
 	objects.names.material.dispose()
 	scene.remove(objects.names)
 	scene.add(newNameMesh)
-	objects.score = newNameMesh
+	objects.names = newNameMesh
 }
 
 const updateNames = ({ name1, name2 }) => {

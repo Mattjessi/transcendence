@@ -35,7 +35,8 @@ function BlockModal({ tab, setShow, setInfo }) {
 	}
 
 	const removeBlock = async (playerID) => {
-		try {await axiosInstance.delete(`/users/api/block/remove/${playerID}/`)}
+		const json = {data: {"id": playerID}}
+		try {await axiosInstance.delete(`/users/api/block/remove/`, json)}
 		catch(error) {
 			if (error && error.response && error.response.data && error.response.data.message) {
 				setInfo(error.response.data.message)
