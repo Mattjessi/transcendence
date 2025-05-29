@@ -670,21 +670,20 @@ class UnblockPlayerSerializer(serializers.ModelSerializer):
 #===2FA====
 
 class Enable2FASerializer(serializers.Serializer):
-    otp_code = serializers.CharField(write_only=True, allow_blank=True, allow_null=True)
+    otp_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     def validate(self, data):
         user = self.context['request'].user
         if not user.is_authenticated:
-            raise serializers.ValidationError({"code": 1030, "message": "Unauthenticated user"})  # Utilisateur non authentifié
+            raise serializers.ValidationError({"code": 1030})  # Utilisateur non authentifié
 
         otp_code = data.get('otp_code')
         if otp_code and not re.match(r'^\d{6}$', otp_code):
             raise serializers.ValidationError({"code": 1037, "message": "The OTP code must be exactly 6 digits."})
-    
         player = user.player_profile
         device, created = TOTPDevice.objects.get_or_create(user=user, name=f"{player.name}_totp")
         if otp_code and not device.verify_token(otp_code):
-            raise serializers.ValidationError({"code": 1036, "message": "Invalid TOTP code"})  # Code TOTP invalide
+            raise serializers.ValidationError({"code": 1036})  # Code TOTP invalide
 
         return data
 
@@ -739,6 +738,7 @@ class Enable2FASerializer(serializers.Serializer):
             "qr_code_url": modified_url,
             "qr_code_image": f"data:image/png;base64,{qr_code_image}"
         }
+
 
 class Disable2FASerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
