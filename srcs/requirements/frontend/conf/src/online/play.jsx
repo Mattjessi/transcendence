@@ -6,7 +6,7 @@ import { Modal, Button } from "react-bootstrap"
 import { confetti } from "dom-confetti"
 import { useNotification } from "../websockets/notification"
 
-function WinnerModal({ winnerName, show, onClose }) {
+function WinnerModal({ winnerName, show, onClose, setState }) {
 
 	const confettiRef = useRef(null)
 	const navigate = useNavigate()
@@ -23,6 +23,7 @@ function WinnerModal({ winnerName, show, onClose }) {
 
 	const backToMenu = () => {
 		onClose()
+		setState("")
 		navigate("/home")
 	}
 
@@ -38,10 +39,9 @@ function WinnerModal({ winnerName, show, onClose }) {
 	)
 }
 
-function PlayMatch() {
+function PlayMatch({ setState }) {
 
 	const { getSocket, closeSocket, messages } = useGame()
-	const { setMessages, setPongMessages } = useGame()
 	const { setNotifMessages } = useNotification()
 	const [paused, setPaused] = useState(false)
 	const { user } = useAuth()
@@ -66,8 +66,6 @@ function PlayMatch() {
 				setWinner(user.name)
 			setPaused(false)
 			setEnd(true)
-			setMessages([])
-			setPongMessages([])
 		}
 		if (lastMessage.type == "game_paused" || (lastMessage.type == "player_count" && lastMessage.player_count == 1))
 			setPaused(true)
@@ -88,7 +86,7 @@ function PlayMatch() {
 				<Button className="" onClick={() => declareWin()}>Declare win in {timer}s</Button>
 			</div>
 		</div> : <></> }
-		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd }/>
+		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd } setState={ setState }/>
 		</>
 	)
 }

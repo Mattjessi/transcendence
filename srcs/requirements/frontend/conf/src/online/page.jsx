@@ -75,7 +75,7 @@ function Online({ user }) {
 				{state == "wait" ?
 				<WaitMatch setState={ setState } setShow={ setShow } setInfo={ setInfo }/> : <></>}
 				{state == "play" ?
-				<PlayMatch/> : <></>}
+				<PlayMatch setState={ setState }/> : <></>}
 				<ErrorModal show={ show } hideModal={ hideModal } contextId={ 5 } info={ info } />
 			</main>
 		</>

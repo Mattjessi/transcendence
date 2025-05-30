@@ -7,7 +7,7 @@ import { confetti } from "dom-confetti"
 import { useAuth } from "../auth/context"
 import axiosInstance from "../auth/instance"
 
-function WinnerModal({ winnerName, show, onClose }) {
+function WinnerModal({ winnerName, show, onClose, setState }) {
 
 	const confettiRef = useRef(null)
 	const navigate = useNavigate()
@@ -24,6 +24,7 @@ function WinnerModal({ winnerName, show, onClose }) {
 
 	const backToMenu = () => {
 		onClose()
+		setState("")
 		navigate("/home")
 	}
 
@@ -42,7 +43,6 @@ function WinnerModal({ winnerName, show, onClose }) {
 function PlayMatch({ setState, setType }) {
 
 	const { getSocket, closeSocket, messages } = useGame()
-	const { setMessages, setPongMessages } = useGame()
 	const { user } = useAuth()
 	const [paused, setPaused] = useState(false)
 	const [end, setEnd] = useState(false)
@@ -89,8 +89,6 @@ function PlayMatch({ setState, setType }) {
 				}
 				setPaused(false)
 				setEnd(true)
-				setMessages([])
-				setPongMessages([])
 			}
 			if (lastMessage.type == "game_paused" || (lastMessage.type == "player_count" && lastMessage.player_count == 1))
 				setPaused(true)
@@ -113,7 +111,7 @@ function PlayMatch({ setState, setType }) {
 				<Button className="" onClick={() => declareWin()}>Declare win in {timer}s</Button>
 			</div>
 		</div> : <></> }
-		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd }/>
+		<WinnerModal winnerName={ winner } show={ end } onClose={ closeEnd } setState={ setState }/>
 		</>
 	)
 }

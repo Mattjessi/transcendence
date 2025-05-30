@@ -10,7 +10,6 @@ import axiosInstance from "../auth/instance.jsx"
 import ErrorModal from "../global/error-modal.jsx"
 import { useGame } from "../websockets/game.jsx"
 
-
 function Tournament({ user }) {
 
 	const [state, setState] = useState("")
