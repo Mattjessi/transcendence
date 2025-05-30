@@ -4,8 +4,8 @@ COMPOSE_FILE="./srcs/docker-compose.yml"
 ENV_FILE="./srcs/env/.env_nginx"
 
 if [ ! -f "$ENV_FILE" ]; then
-    echo "Erreur : Le fichier $ENV_FILE n'existe pas."
     touch $ENV_FILE
+    echo "PORT_NUM='4343'" >> $ENV_FILE
 fi
 
 NEW_DOMAIN_NAME=\'$(hostname --short)\'
